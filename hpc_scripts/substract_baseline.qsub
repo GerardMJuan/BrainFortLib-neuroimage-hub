@@ -1,0 +1,8 @@
+#!/bin/bash
+#$ -N subs
+#$ -q default.q
+#$ -cwd
+#$ -e logs/$JOB_NAME-$JOB_ID.err
+#$ -o logs/$JOB_NAME-$JOB_ID.out
+module load python/3.5.1 openblas/0.2.18 gcc/4.8.1
+python3 substract_baseline.py --in_dir_baseline /homedtic/gmarti/DATA/Data/baseline_Syn2_masked/ --in_dir_followup /homedtic/gmarti/DATA/Data/followups_Syn2_masked/ --out_directory /homedtic/gmarti/DATA/Data/diff_Syn2_masked/ --img_suffix nii.gz --out_suffix diff
