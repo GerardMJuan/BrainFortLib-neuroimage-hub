@@ -20,7 +20,6 @@ parser = argparse.ArgumentParser(description='Segment a set of images.\n'
 parser.add_argument("--in_dir", type=str, nargs=1, required=True, help='Parent ADNI directory')
 parser.add_argument("--img_suffix", type=str, nargs=1, required=True, help='suffix input images')
 parser.add_argument("--out_dir", type=str, nargs=1, help='Output ADNI directory.')
-parser.add_argument("--clean", action="store_true", help="Clean out directory of output files")
 parser.add_argument("--num_threads", type=int, nargs=1, default=[50], help="(optional) number of threads (default 50)")
 
 os.environ["ANTSPATH"] = "/homedtic/gsanroma/CODE/LIB/ANTs/build/bin"

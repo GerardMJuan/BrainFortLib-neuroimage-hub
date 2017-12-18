@@ -1,0 +1,8 @@
+#!/bin/bash
+#$ -N segment
+#$ -q default.q
+#$ -cwd
+#$ -e logs/$JOB_NAME-$JOB_ID.err
+#$ -o logs/$JOB_NAME-$JOB_ID.out
+module load python
+python3 /homedtic/gmarti/CODE/img-mri-processing/MRI_processing/segment_images.py --in_dir /homedtic/gmarti/DATA/Data/ADNI_Affine1_SdBaseline_masked/ --out_dir /homedtic/gmarti/DATA/Data/ADNI_Affine1_SdBaseline_seg/ --img_suffix Warped.nii.gz --num_threads 40
