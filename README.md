@@ -17,7 +17,7 @@ The file structure of the code is subject to change:
 * **scripts** -
 
 ### Project wiki
-Moreover, the wiki is hosted in this same repository. The idea is the wiki to host
+The wiki is hosted in this same repository. The idea is the wiki to host
 detailed pipelines, guides and explanations about the procedures to follow. For example:
 * A page on useful tools and software for visualization.
 * A page detailing learning resources for registration.
@@ -27,7 +27,7 @@ The idea is this repository to serve as support for work done in this project an
 subsequent projects, and that we can have a hub of information for any other
 students or researchers.
 
-To acces the wiki, click on the sidebar or, alternatively, **here**.
+To acces the wiki, click on the link above or, alternatively, [**here**](https://github.com/GerardMJuan/upf-neuroimage-preprocess-hub/wiki).
 
 ## Usage and Contributing
 The idea is to update the scripts and the wiki together! As you do your work, the
@@ -38,6 +38,7 @@ For now, this repository is private. May put it public after some months of work
 
 ## Credits
 Gerard Martí - gerard.marti@upf.edu
+Gerard Sanroma - gerard.sanroma@upf.edu
 
 ## License
 MIT License. Details in the LICENSE file.
