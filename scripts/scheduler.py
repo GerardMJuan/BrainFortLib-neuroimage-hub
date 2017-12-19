@@ -41,7 +41,7 @@ class Launcher(object):
                 pass
 
             executable = "qsub"
-            f.write("#!/bin/sh\n")
+            f.write("#/bin/bash\n")
             if self.name[0].isdigit():
                 scriptname = 's' + self.name
             else:
@@ -58,7 +58,6 @@ class Launcher(object):
                 f.write("#$ -v OMP_NUM_THREADS=%d\n" % self.omp_num_threads)
             f.write("#$ -v ANTSPATH=%s\n" % os.environ['ANTSPATH'])
             f.write("#$ -v ANTSSCRIPTS=%s\n" % os.environ['ANTSSCRIPTS'])
-            f.write("#$ -v PYTHONPATH=%s:/homedtic/gsanroma/CODE/scripts_py:/homedtic/gsanroma/CODE/deeplf\n" % os.environ['PYTHONPATH'])
 
 
         else:
@@ -97,4 +96,3 @@ def check_file_repeat(filename,n_repeats=5,wait_seconds=5):
             continue
         break
     assert f, "Cannot open qsub output file: {}".format(filename)
-

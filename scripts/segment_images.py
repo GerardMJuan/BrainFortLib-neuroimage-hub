@@ -36,16 +36,8 @@ else:
 # Initial checks
 #
 n_total_jobs = int(args.num_threads[0])
-
-if not args.histmatch:
-    assert args.template_file is None and args.template_maskout_mask is None and not args.template_norm, "Unnecessary template if not histmatch"
-
-if args.histmatch:
-    assert args.template_file is not None, "Need template for histogram matching"
-
-if args.template_file is not None:
-    assert os.path.exists(args.template_file[0]), "Template file not found"
-
+in_dir = args.in_dir[0]
+img_suffix = args.img_suffix[0]
 # Get list of input images.
 files_list = os.listdir(in_dir)
 img_list = [f for f in sorted(files_list) if fnmatch(f, '*' + img_suffix)]
@@ -64,6 +56,7 @@ if not os.path.exists(args.out_dir[0]):
 #
 # Pipeline
 #
+wait_jobs = [os.path.join(os.environ['ANTSSCRIPTS'], "waitForSGEQJobs.pl"), '0', '10']
 
 for img_file in img_list:
     # The output path is in the out_dir, following the same structure as
@@ -72,15 +65,15 @@ for img_file in img_list:
 
     if not os.path.exists(os.path.dirname(out_path)):
         os.makedirs(os.path.dirname(out_path))
-
-    cmdline = ['fast', os.path.join(in_dir, img_file)]
-    cmdline = ['-n 3'] #Number of classes
-    cmdline = ['-o', os.path.join(out_dir, img_file)] #Number of classes
-
+    fastpath = '/homedtic/gmarti/fsl-lib/bin/fast'
+    cmdline = [fastpath]
+    cmdline += ['-n 3'] #Number of classes
+    cmdline += ['-o', out_path] #Number of classes
+    cmdline += [os.path.join(in_dir, img_file)] # File
     print("Launching segmentation for {}".format(img_file))
 
     qsub_launcher = Launcher(' '.join(cmdline))
-    qsub_launcher.name = img_name.split(os.extsep, 1)[0]
+    qsub_launcher.name = img_file.split(os.extsep, 1)[0]
     qsub_launcher.folder = args.out_dir[0]
     qsub_launcher.queue = 'short.q'
     job_id = qsub_launcher.run()
