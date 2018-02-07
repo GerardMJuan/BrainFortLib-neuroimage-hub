@@ -52,7 +52,7 @@ class Launcher(object):
             f.write("#SBATCH -p {}\n".format(self.queue))
             f.write("#SBATCH -o {}\n".format(outfile))
             f.write("#SBATCH -e {}\n".format(errfile))
-            f.write("#SBATCH --mem {512}\n".format(errfile))
+            f.write("#SBATCH --mem {}\n".format(512))
             if self.run_in_gpu:
                 f.write("#SBATCH -l gpu=1\n")
             if self.omp_num_threads > 0:
