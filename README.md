@@ -13,8 +13,9 @@ and to quickly fix any issues or questions we may have, as well as having a sing
 and centralizing all our code. Remember to not upload anything
 ## Table of contents
 The file structure of the code is subject to change:
-* **hpc_scripts** - Scripts to use a
-* **scripts** -
+* **scripts** - Python scripts to process images.
+* **hpc_scripts** - Used to launch scripts from the other folder in the HPC cluster from the UPF.
+
 
 ### Project wiki
 The wiki is hosted in this same repository. The idea is the wiki to host
@@ -37,9 +38,8 @@ be put in the issues section or in a new page in the wiki.
 For now, this repository is private. May put it public after some months of work.
 
 ## Credits
-Gerard Martí - gerard.marti@upf.edu
-
-Gerard Sanroma - gerard.sanroma@upf.edu
+* Gerard Martí - gerard.marti@upf.edu
+* Gerard Sanroma - gerard.sanroma@upf.edu
 
 ## License
 MIT License. Details in the LICENSE file.
