@@ -6,7 +6,7 @@ from time import sleep
 from sys import platform
 
 #
-# # Class qsub launcher
+# # Class sbatch launcher
 #
 
 class Launcher(object):
@@ -15,7 +15,7 @@ class Launcher(object):
 
         self.name = 'script.sh'
         self.folder = './'
-        self.queue = 'default.q'
+        self.queue = 'short'
         self.cmd = cmd
         self.omp_num_threads = 0
         self.run_in_gpu = False
@@ -40,31 +40,33 @@ class Launcher(object):
             except:
                 pass
 
-            executable = "qsub"
-            f.write("#/bin/bash\n")
+            executable = "sbatch"
+            f.write("#!/bin/bash\n")
             if self.name[0].isdigit():
                 scriptname = 's' + self.name
             else:
                 scriptname = self.name
-            f.write("#$ -N {}\n".format(scriptname))
-            f.write("#$ -cwd\n")
-            f.write("#$ -q {}\n".format(self.queue))
-            f.write("#$ -o {}\n".format(outfile))
-            f.write("#$ -e {}\n".format(errfile))
+                
+            f.write("#SBATCH --job-name {}\n".format(scriptname))
+            f.write("#SBATCH --workdir=\n")
+            f.write("#SBATCH -p {}\n".format(self.queue))
+            f.write("#SBATCH -o {}\n".format(outfile))
+            f.write("#SBATCH -e {}\n".format(errfile))
+            f.write("#SBATCH --mem {}\n".format(2048))
             if self.run_in_gpu:
-                f.write("#$ -l gpu=1\n")
+                f.write("#SBATCH -l gpu=1\n")
             if self.omp_num_threads > 0:
-                f.write("#$ -pe ompi* %d\n" % self.omp_num_threads)
-                f.write("#$ -v OMP_NUM_THREADS=%d\n" % self.omp_num_threads)
-            f.write("#$ -v ANTSPATH=%s\n" % os.environ['ANTSPATH'])
-            f.write("#$ -v ANTSSCRIPTS=%s\n" % os.environ['ANTSSCRIPTS'])
+                f.write("#SBATCH -n ompi* %d\n" % self.omp_num_threads)
+                f.write("#SBATCH --export=OMP_NUM_THREADS=%d\n" % self.omp_num_threads)
+            f.write("#SBATCH --export=ANTSPATH=%s\n" % os.environ['ANTSPATH'])
+            f.write("#SBATCH --export=ANTSSCRIPTS=%s\n" % os.environ['ANTSSCRIPTS'])
 
 
         else:
             executable = "bash"
 
         if self.run_in_gpu:
-            f.write('module load cuda/7.5\n')
+            f.write('module load CUDA/8.0.61\n')
             f.write('THEANO_FLAGS=mode=FAST_RUN,device=gpu,floatX=float32 ' + self.cmd)
         else:
             f.write(self.cmd)
@@ -74,7 +76,7 @@ class Launcher(object):
 
         if self.is_hpc:
             ex_out = subprocess.check_output([executable,script_file])
-            return ex_out.split()[2]
+            return ex_out.split()[3]
         else:
             subprocess.call([executable,script_file])
             return
@@ -95,4 +97,4 @@ def check_file_repeat(filename,n_repeats=5,wait_seconds=5):
             print("Retrying...")
             continue
         break
-    assert f, "Cannot open qsub output file: {}".format(filename)
+	assert f, "Cannot open qsub output file: {}".format(filename)

@@ -38,6 +38,7 @@ For now, this repository is private. May put it public after some months of work
 
 ## Credits
 Gerard Martí - gerard.marti@upf.edu
+
 Gerard Sanroma - gerard.sanroma@upf.edu
 
 ## License
