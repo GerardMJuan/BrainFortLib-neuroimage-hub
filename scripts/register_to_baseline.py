@@ -23,21 +23,19 @@ parser.add_argument("--num_threads", type=int, nargs=1, default=[8], help="(opti
 
 # One of the arguments must be a directory with all the baselines, such that is easy to, given a followup, we can perform in a loop all the registrations with the correct
 
-os.environ["ANTSPATH"] = "/homedtic/gsanroma/CODE/LIB/ANTs/build/bin"
+os.environ["ANTSPATH"] = "/homedtic/gmarti/LIB/ANTsbin/bin"
+os.environ["ANTSSCRIPTS"] = "/homedtic/gmarti/LIB/ANTs/Scripts"
 
-os.environ["ANTSSCRIPTS"] = "/homedtic/gsanroma/CODE/LIB/ANTs/Scripts"
+n_jobs = 0
+n_total_jobs = 2
 
 args = parser.parse_args()
-# args = parser.parse_args('--in_dir /Users/gsanroma/DATA/DATABASES/ADNI/atlases/kk --img_suffix moving.nii.gz --template_file /Users/gsanroma/DATA/DATABASES/ADNI/atlases/kk/fixed.nii.gz --transform Affine 4 --out_warp_intfix rigid3 --out_dir /Users/gsanroma/DATA/DATABASES/ADNI/atlases/kk --init_warp_dir_suffix /Users/gsanroma/DATA/DATABASES/ADNI/atlases/kk moving_warped0GenericAffine.mat --init_warp_dir_suffix /Users/gsanroma/DATA/DATABASES/ADNI/atlases/kk moving_masked_warped20GenericAffine.mat 1 --template_mask /Users/gsanroma/DATA/DATABASES/ADNI/atlases/kk/left2.nii.gz'.split())
 
 if platform == 'darwin':
     is_hpc = False
 else:
     is_hpc = True
 
-is_hpc = False
-n_jobs = 0
-n_total_jobs = 80
 
 #
 # Initial checks
@@ -68,7 +66,7 @@ if not os.path.exists(args.out_dir[0]):
 #
 
 antsregistration_path = os.path.join(os.environ['ANTSPATH'], 'antsRegistration')
-wait_jobs = [os.path.join(os.environ['ANTSSCRIPTS'], "waitForSGEQJobs.pl"), '0', '10']
+wait_jobs = [os.path.join(os.environ['ANTSSCRIPTS'], "waitForSlurmJobs.pl"), '0', '10']
 for img_file in img_list:
     img_name = img_file.split(args.img_suffix[0])[0]
 
@@ -202,28 +200,28 @@ for img_file in img_list:
     qsub_launcher = Launcher(' '.join(cmdline))
     qsub_launcher.name = img_file.split(os.extsep, 1)[0]
     qsub_launcher.folder = args.out_dir[0]
-    qsub_launcher.omp_num_threads = args.num_threads[0]
-    # qsub_launcher.queue = 'short.q'
+    # qsub_launcher.omp_num_threads = args.num_threads[0]
+    qsub_launcher.queue = short.q
     job_id = qsub_launcher.run()
 
     if is_hpc:
         wait_jobs += [job_id]
 
     n_jobs += 1
-    
+
     # Wait for the jobs to finish (in cluster)
     if is_hpc and n_total_jobs <= n_jobs:
         print("Waiting for registration jobs to finish...")
         call(wait_jobs)
 
         ## Remove extra files from directory
-        filelist = [ f for f in os.listdir(args.out_dir[0]) if not f.endswith(".nii.gz") ]
-        for f in filelist:
-            os.remove(os.path.join(args.out_dir[0], f))
+        #filelist = [ f for f in os.listdir(args.out_dir[0]) if not f.endswith(".nii.gz") ]
+        #for f in filelist:
+        #        os.remove(os.path.join(args.out_dir[0], f))
 
         # Put njobs and waitjobs at 0 again
         n_jobs = 0
-        wait_jobs = [os.path.join(os.environ['ANTSSCRIPTS'], "waitForSGEQJobs.pl"), '0', '60']
+        wait_jobs = [os.path.join(os.environ['ANTSSCRIPTS'], "waitForSlurmJobs.pl"), '0', '60']
 
 # Wait for the last remaining jobs to finish (in cluster)
 if is_hpc:
