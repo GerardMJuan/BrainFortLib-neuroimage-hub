@@ -1,0 +1,3 @@
+[submodule "scripts/pybids"]
+	path = scripts/pybids
+	url = https://github.com/GerardMJuan/pybids.git

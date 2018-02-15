@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH -J adni_to_bids
-#SBATCH -p short
+#SBATCH -p medium
 #SBATCH --workdir=/homedtic/gmarti/LOGS
 #SBATCH -o bids_%J.out # STDOUT
 #SBATCH -e bids_%j.err # STDERR
