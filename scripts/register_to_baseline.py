@@ -201,7 +201,7 @@ for img_file in img_list:
     qsub_launcher.name = img_file.split(os.extsep, 1)[0]
     qsub_launcher.folder = args.out_dir[0]
     # qsub_launcher.omp_num_threads = args.num_threads[0]
-    qsub_launcher.queue = short.q
+    qsub_launcher.queue = 'short'
     job_id = qsub_launcher.run()
 
     if is_hpc:
