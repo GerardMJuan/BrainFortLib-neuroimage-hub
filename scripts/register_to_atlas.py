@@ -9,7 +9,7 @@ import numpy as np
 parser = argparse.ArgumentParser(description='Registers images to template. Can use initial transformation.')
 parser.add_argument("--in_dir", type=str, nargs=1, required=True, help='directory input images')
 parser.add_argument("--img_suffix", type=str, nargs=1, required=True, help='suffix input images')
-parser.add_argument("--template_dir", type=str, nargs=1, required=True, help='template dir with all the baseline images')
+parser.add_argument("--template_file", type=str, nargs=1, required=True, help='template image')
 parser.add_argument("--template_mask", type=str, nargs=1, help="(optional) to limit registration to a region (better start with good initialization)")
 parser.add_argument("--init_warp_dir_suffix", type=str, nargs='+', action="append", help="(optional) dir, suffix (and inverse flag for affine) of warps to be used as initialization (in order)")
 parser.add_argument("--transform", type=str, nargs=2, required=True, help="Rigid[*] | Affine[*] | Syn[*], 1<=resolution<=4 (with \'*\' do all lower resolutions too)")
@@ -18,10 +18,7 @@ parser.add_argument("--out_dir", type=str, nargs=1, required=True, help='output 
 parser.add_argument("--output_warped_image", action="store_true", help="output warped images (image name w/o ext + intfix + Warped.nii.gz)")
 parser.add_argument("--float", action="store_true", help='use single precision computations')
 parser.add_argument("--use_labels", type=str, nargs='+', help='use labels for registration: label_dir, label_suffix, template_labels, [weights_list_for_each_stage]')
-parser.add_argument("--num_threads", type=int, nargs=1, default=[8], help="(optional) number of threads (default 8)")
 
-
-# One of the arguments must be a directory with all the baselines, such that is easy to, given a followup, we can perform in a loop all the registrations with the correct
 
 os.environ["ANTSPATH"] = "/homedtic/gmarti/LIB/ANTsbin/bin"
 os.environ["ANTSSCRIPTS"] = "/homedtic/gmarti/LIB/ANTs/Scripts"
@@ -35,17 +32,15 @@ if platform == 'darwin':
     is_hpc = False
 else:
     is_hpc = True
-
-
 #
 # Initial checks
 #
 
 files_list = os.listdir(args.in_dir[0])
-img_list = [f for f in files_list if fnmatch(f, '*' + args.img_suffix[0])]
+img_list = [f for f in sorted(files_list) if fnmatch(f, '*' + args.img_suffix[0])]
 assert img_list, "List of input images is empty"
 
-assert os.path.exists(args.template_dir[0]), "Template file dir found"
+assert os.path.exists(args.template_file[0]), "Template file not found"
 if args.template_mask is not None:
     assert os.path.exists(args.template_mask[0]), "Template mask not found"
 
@@ -67,17 +62,21 @@ if not os.path.exists(args.out_dir[0]):
 
 antsregistration_path = os.path.join(os.environ['ANTSPATH'], 'antsRegistration')
 wait_jobs = [os.path.join(os.environ['ANTSSCRIPTS'], "waitForSlurmJobs.pl"), '0', '10']
+
 for img_file in img_list:
+
     img_name = img_file.split(args.img_suffix[0])[0]
-
-    # Find the template file in the baseline directory
-    prefix_file = img_name[:16]
-    files = [i for i in os.listdir(args.template_dir[0]) if os.path.isfile(os.path.join(args.template_dir[0],i)) and \
-         prefix_file in i]
-
-    template_file = os.path.join(args.template_dir[0],files[0])
-
     img_path = os.path.join(args.in_dir[0], img_file)
+    '''
+    img_id = img_name[5:8]
+    print(img_id)
+    if int(img_id) < 22:
+    	continue
+	'''
+    #if os.path.isfile(os.path.join(args.out_dir[0], img_file.split(os.extsep, 1)[0] + args.out_warp_intfix[0] + 'Warped.nii.gz')):
+    #    print('File already exists.')
+    #    continue
+
 
     if args.use_labels is not None:
         lab_path = os.path.join(args.use_labels[0], img_name + args.use_labels[1])
@@ -85,7 +84,7 @@ for img_file in img_list:
 
     cmdline = [antsregistration_path, '--dimensionality', '3']
     if args.output_warped_image:
-        cmdline += ['--output', '[{}{},{}Warped.nii.gz]'.format(os.path.join(args.out_dir[0], img_name), args.out_warp_intfix[0], os.path.join(args.out_dir[0], img_file.split(os.extsep, 1)[0] + args.out_warp_intfix[0]))]
+        cmdline += ['--output', '[{}{},{}AtlasWarped.nii.gz]'.format(os.path.join(args.out_dir[0], img_name), args.out_warp_intfix[0], os.path.join(args.out_dir[0], img_file.split(os.extsep, 1)[0] + args.out_warp_intfix[0]))]
     else:
         cmdline += ['--output', '{}{}'.format(os.path.join(args.out_dir[0], img_name), args.out_warp_intfix[0])]
     cmdline += ['--write-composite-transform', '0']
@@ -99,7 +98,7 @@ for img_file in img_list:
     # init transforms
 
     if not args.init_warp_dir_suffix:
-        cmdline += ['--initial-moving-transform', '[{},{},1]'.format(template_file, img_path)]
+        cmdline += ['--initial-moving-transform', '[{},{},1]'.format(img_path,args.template_file[0])]
     else:
         for init_warp in args.init_warp_dir_suffix[::-1]:
             if len(init_warp) < 3:
@@ -132,9 +131,9 @@ for img_file in img_list:
             weight_idx += 1
 
         if not args.template_mask:
-            cmdline += ['--metric', 'MI[{},{},{},32,Regular,0.25]'.format(template_file, img_path, w_img)]
+            cmdline += ['--metric', 'MI[{},{},{},32,Regular,0.25]'.format(img_path, args.template_file[0], w_img)]
         else:
-            cmdline += ['--metric', 'GC[{},{},{}]'.format(template_file, img_path, w_img)]
+            cmdline += ['--metric', 'GC[{},{},{}]'.format(img_path,args.template_file[0], w_img)]
 
         if w_lab > 0.0:
             cmdline += ['--metric', 'MeanSquares[{},{},{}]'.format(args.use_labels[2], lab_path, w_lab)]
@@ -155,9 +154,9 @@ for img_file in img_list:
             weight_idx += 1
 
         if not args.template_mask:
-            cmdline += ['--metric', 'MI[{},{},{},32,Regular,0.25]'.format(template_file, img_path, w_img)]
+            cmdline += ['--metric', 'MI[{},{},{},32,Regular,0.25]'.format(img_path,args.template_file[0], w_img)]
         else:
-            cmdline += ['--metric', 'GC[{},{},{}]'.format(template_file, img_path, w_img)]
+            cmdline += ['--metric', 'GC[{},{},{}]'.format(img_path, args.template_file[0],w_img)]
 
         if w_lab > 0.0:
             cmdline += ['--metric', 'MeanSquares[{},{},{}]'.format(args.use_labels[2], lab_path, w_lab)]
@@ -177,7 +176,7 @@ for img_file in img_list:
             w_img = 1.0 - w_lab
             weight_idx += 1
 
-        cmdline += ['--metric', 'CC[{},{},{},4]'.format(template_file, img_path, w_img)]
+        cmdline += ['--metric', 'CC[{},{},{},4]'.format(img_path, args.template_file[0], w_img)]
         if w_lab > 0.0:
             cmdline += ['--metric', 'MeanSquares[{},{},{}]'.format(args.use_labels[2], lab_path, w_lab)]
 
@@ -193,14 +192,15 @@ for img_file in img_list:
 
     #
     # launch
-
+    cmdline += ['-v','1']
+    print(' '.join(cmdline))
     print("Launching registration of file {}".format(img_file))
-    # os.system(' '.join(cmdline))
+    
+	#os.system(' '.join(cmdline))
 
     qsub_launcher = Launcher(' '.join(cmdline))
     qsub_launcher.name = img_file.split(os.extsep, 1)[0]
     qsub_launcher.folder = args.out_dir[0]
-    # qsub_launcher.omp_num_threads = args.num_threads[0]
     qsub_launcher.queue = 'short'
     job_id = qsub_launcher.run()
 
@@ -214,14 +214,14 @@ for img_file in img_list:
         print("Waiting for registration jobs to finish...")
         call(wait_jobs)
 
-        ## Remove extra files from directory
-        filelist = [ f for f in os.listdir(args.out_dir[0]) if not f.endswith(".nii.gz") ]
+        # Remove extra files from directory
+        filelist = [ f for f in os.listdir(args.out_dir[0]) if (not f.endswith("Warped.nii.gz") and not f.endswith(".mat")) ]
         for f in filelist:
-                os.remove(os.path.join(args.out_dir[0], f))
+            os.remove(os.path.join(args.out_dir[0], f))
 
         # Put njobs and waitjobs at 0 again
         n_jobs = 0
-        wait_jobs = [os.path.join(os.environ['ANTSSCRIPTS'], "waitForSlurmJobs.pl"), '0', '60']
+        wait_jobs = [os.path.join(os.environ['ANTSSCRIPTS'], "waitForSlurmJobs.pl"), '0', '10']
 
 # Wait for the last remaining jobs to finish (in cluster)
 if is_hpc:
@@ -229,9 +229,9 @@ if is_hpc:
     call(wait_jobs)
 
     # Remove extra files from directory
-    filelist = [ f for f in os.listdir(args.out_dir[0]) if not f.endswith(".nii.gz") ]
+    filelist = [ f for f in os.listdir(args.out_dir[0]) if (not f.endswith("Warped.nii.gz") and not f.endswith(".mat")) ]
     for f in filelist:
-         os.remove(os.path.join(args.out_dir[0], f))
+      os.remove(os.path.join(args.out_dir[0], f))
 
     # Put njobs at 0 again
     n_jobs = 0
