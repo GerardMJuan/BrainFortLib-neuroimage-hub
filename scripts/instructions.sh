@@ -9,6 +9,7 @@ FILES:
     register_to_pet.py
     register_to_atlas.py
     register_to_label.py
+    scheduler.py
     
 FOLDERS:
 
