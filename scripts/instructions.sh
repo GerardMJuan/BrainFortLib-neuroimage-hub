@@ -9,7 +9,6 @@ FILES:
     register_to_pet.py
     register_to_atlas.py
     register_to_label.py
-    scheduler.py
     
 FOLDERS:
 
@@ -31,7 +30,7 @@ python register_to_template.py --in_dir /homedtic/pjavierre/pipeline/brain_extra
 
 ####     2. Alignment of the PET-MRI images: Registration of the original PET image to the MRI brain extracted image
 
-python register_to_baseline.py --in_dir /homedtic/pjavierre/pipeline/PET_original --img_suffix _pet.nii.gz --template_dir /homedtic/pjavierre/pipeline/brain_extraction --out_dir /homedtic/pjavierre/pipeline/PET_MRI  --out_warp_intfix test --transform Rigid 1 --output_warped_image
+python register_to_baseline.py --in_dir /homedtic/gmarti/DATA/Data/ADNI_BIDS --img_suffix .nii.gz --template_dir /homedtic/pjavierre/pipeline/brain_extraction --out_dir /homedtic/pjavierre/pipeline/PET_MRI  --out_warp_intfix test --transform Rigid 1 --output_warped_image
 
 
 
