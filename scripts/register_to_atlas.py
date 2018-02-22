@@ -7,9 +7,9 @@ from subprocess import call
 import numpy as np
 
 parser = argparse.ArgumentParser(description='Registers images to template. Can use initial transformation.')
-parser.add_argument("--in_dir", type=str, nargs=1, required=True, help='directory input images')
-parser.add_argument("--img_suffix", type=str, nargs=1, required=True, help='suffix input images')
-parser.add_argument("--template_file", type=str, nargs=1, required=True, help='template image')
+parser.add_argument("--in_dir", type=str, nargs=1, required=True, help='directory template images')
+parser.add_argument("--img_suffix", type=str, nargs=1, required=True, help='suffix template images')
+parser.add_argument("--template_file", type=str, nargs=1, required=True, help='moving image')
 parser.add_argument("--template_mask", type=str, nargs=1, help="(optional) to limit registration to a region (better start with good initialization)")
 parser.add_argument("--init_warp_dir_suffix", type=str, nargs='+', action="append", help="(optional) dir, suffix (and inverse flag for affine) of warps to be used as initialization (in order)")
 parser.add_argument("--transform", type=str, nargs=2, required=True, help="Rigid[*] | Affine[*] | Syn[*], 1<=resolution<=4 (with \'*\' do all lower resolutions too)")

@@ -10,7 +10,7 @@ import nibabel as nib
 import os
 import fnmatch
 
-os.chdir("/home/Paula/pipeline/labels") #cogemos este directorio random, no importa porque los archivos tienen el mismo prefijo
+os.chdir("/homedtic/pjavierre/pipeline/labels") #cogemos este directorio random, no importa porque los archivos tienen el mismo prefijo
 os.listdir(".")
 r=[]
 for x in os.listdir('.'):
@@ -22,7 +22,7 @@ print r
     
 
 # Creamos directorio de salida donde guardar las ROI
-directory='/home/Paula/pipeline/ROI'
+directory='/homedtic/pjavierre/pipeline/ROI'
 if not os.path.exists(directory):
     os.makedirs(directory)
 
@@ -30,9 +30,9 @@ if not os.path.exists(directory):
 v = 0
 for v in r:
     
-    label = nib.load('/home/Paula/pipeline/labels/{}_ses-M00_task-rest_acq-fdg_pettestWarpedPETWarpedtest0GenericAffineLabelWarped.nii.gz'.format(v)) #Labels del atlas registrados a nuestro espacio
-    pet = nib.load('/home/Paula/pipeline/PET_registered/{}_ses-M00_task-rest_acq-fdg_pettestWarpedPETWarped.nii.gz'.format(v)) #PET al que queremos sacar ROIs
-    mri = nib.load('/home/Paula/pipeline/brain_extraction_registered/{}_ses-M00_T1w_Rigid_Warped_braintestWarped.nii.gz'.format(v)) #MRI al que queremos sacar ROIs
+    label = nib.load('/homedtic/pjavierre/pipeline/labels/{}_ses-M00_task-rest_acq-fdg_pettestWarpedPETWarpedtest0GenericAffineLabelWarped.nii.gz'.format(v)) #Labels del atlas registrados a nuestro espacio
+    pet = nib.load('/homedtic/pjavierre/pipeline/PET_registered/{}_ses-M00_task-rest_acq-fdg_pettestWarpedPETWarped.nii.gz'.format(v)) #PET al que queremos sacar ROIs
+    mri = nib.load('//homedtic/pjavierre/pipeline/brain_extraction_registered/{}_ses-M00_T1w_Rigid_Warped_braintestWarped.nii.gz'.format(v)) #MRI al que queremos sacar ROIs
 
     
     affine_label = label.affine #Cogemos esta matriz porque todos los tipos de imagenes tienen la misma
@@ -47,11 +47,11 @@ for v in r:
     
     print 'Loading images of pacient {}  ...'.format(v)
     
-    os.chdir("/home/Paula/pipeline") #cogemos este directorio random, no importa porque los archivos tienen el mismo prefijo
+    os.chdir("/homedtic/pjavierre/pipeline") #cogemos este directorio random, no importa porque los archivos tienen el mismo prefijo
         
     np.savetxt('Labels.txt', unique_label)
     
-    os.chdir("/home/Paula/pipeline/labels")
+    os.chdir("/homedtic/pjavierre/pipeline/labels")
 
     i=0
     mean_pet = []
@@ -85,7 +85,7 @@ for v in r:
     #Guardamos el array que contiene todos los valores medios de cada ROI
     
     
-        os.chdir("/home/Paula/pipeline") #cogemos este directorio random, no importa porque los archivos tienen el mismo prefijo
+        os.chdir("/homedtic/pjavierre/pipeline") #cogemos este directorio random, no importa porque los archivos tienen el mismo prefijo
         
         np.savetxt('mean_pet_{}_.txt'.format(v), mean_pet)
         
@@ -117,9 +117,9 @@ for v in r:
 
     #Para guardar las imagenes
 
-        #nib.save(new_image_mask,'/home/Paula/pipeline/ROI/Mask_{}_Label{}.nii.gz'.format(v,i))
-        #nib.save(new_image_pet,'/home/Paula/pipeline/ROI/PET_{}_Label{}.nii.gz'.format(v,i))
-        #nib.save(new_image_mri,'/home/Paula/pipeline/ROI/MRI_{}_Label{}.nii.gz'.format(v,i))
+        #nib.save(new_image_mask,'/homedtic/pjavierre/pipeline/ROI/Mask_{}_Label{}.nii.gz'.format(v,i))
+        #nib.save(new_image_pet,'/homedtic/pjavierre/pipeline/ROI/PET_{}_Label{}.nii.gz'.format(v,i))
+        #nib.save(new_image_mri,'/homedtic/pjavierre/pipeline/ROI/MRI_{}_Label{}.nii.gz'.format(v,i))
 
         i = i+1
     
@@ -134,7 +134,7 @@ for v in r:
 
 
 # Volvemos al directorio principal que es donde hemos guardado todo
-os.chdir("/home/Paula/pipeline")
+os.chdir("/homedtic/pjavierre/pipeline")
 
 
 #Calcular SUVR para cada paciente
@@ -149,7 +149,7 @@ print 'The correspondence between array position and label is the following:\n{}
 #Escoger que label queremos. Por ejemplo, queremos como referencia el label 900 que es el cerebelo. 
 #Entonces sera la posicion 95 de nuestro array de mean values
 
-filelist = [ f for f in os.listdir("/home/Paula/pipeline") if f.endswith("_.txt") ]
+filelist = [ f for f in os.listdir("/homedtic/pjavierre/pipeline") if f.endswith("_.txt") ]
 selected_label = 95
 for f in filelist:
     SUVtarget = np.loadtxt(f)

@@ -9,7 +9,7 @@ import numpy as np
 parser = argparse.ArgumentParser(description='Registers images to template. Can use initial transformation.')
 parser.add_argument("--in_dir", type=str, nargs=1, required=True, help='directory input images')
 parser.add_argument("--img_suffix", type=str, nargs=1, required=True, help='suffix input images')
-parser.add_argument("--matrix_dir", type=str, nargs=1, required=True, help='template dir with all the baseline images')
+parser.add_argument("--matrix_dir", type=str, nargs=1, required=True, help='matrix dir with all the matrix')
 parser.add_argument("--template_mask", type=str, nargs=1, help="(optional) to limit registration to a region (better start with good initialization)")
 parser.add_argument("--init_warp_dir_suffix", type=str, nargs='+', action="append", help="(optional) dir, suffix (and inverse flag for affine) of warps to be used as initialization (in order)")
 parser.add_argument("--out_warp_intfix", type=str, nargs=1, required=True, help="intfix for output warps")

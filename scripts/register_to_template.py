@@ -24,7 +24,7 @@ os.environ["ANTSPATH"] = "/homedtic/gmarti/LIB/ANTsbin/bin"
 os.environ["ANTSSCRIPTS"] = "/homedtic/gmarti/LIB/ANTs/Scripts"
 
 n_jobs = 0
-n_total_jobs = 2
+n_total_jobs = 10
 
 args = parser.parse_args()
 
@@ -195,8 +195,7 @@ for img_file in img_list:
     cmdline += ['-v','1']
     print(' '.join(cmdline))
     print("Launching registration of file {}".format(img_file))
-    print("emcagonedeu")
-    print("Pero aixo funciona o no")
+    
 	#os.system(' '.join(cmdline))
 
     qsub_launcher = Launcher(' '.join(cmdline))
@@ -216,9 +215,9 @@ for img_file in img_list:
         call(wait_jobs)
 
         # Remove extra files from directory
-        #filelist = [ f for f in os.listdir(args.out_dir[0]) if (not f.endswith("Warped.nii.gz") and not f.endswith(".mat")) ]
-        #for f in filelist:
-        #    os.remove(os.path.join(args.out_dir[0], f))
+        filelist = [ f for f in os.listdir(args.out_dir[0]) if (not f.endswith("Warped.nii.gz") and not f.endswith(".mat")) ]
+        for f in filelist:
+            os.remove(os.path.join(args.out_dir[0], f))
 
         # Put njobs and waitjobs at 0 again
         n_jobs = 0
@@ -230,9 +229,9 @@ if is_hpc:
     call(wait_jobs)
 
     ## Remove extra files from directory
-    # filelist = [ f for f in os.listdir(args.out_dir[0]) if (not f.endswith("Warped.nii.gz") and not f.endswith(".mat")) ]
-    # for f in filelist:
-    #     os.remove(os.path.join(args.out_dir[0], f))
+    filelist = [ f for f in os.listdir(args.out_dir[0]) if (not f.endswith("Warped.nii.gz") and not f.endswith(".mat")) ]
+    for f in filelist:
+      os.remove(os.path.join(args.out_dir[0], f))
 
     # Put njobs at 0 again
     n_jobs = 0
