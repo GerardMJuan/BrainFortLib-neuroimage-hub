@@ -32,8 +32,8 @@ parser.add_argument("--out_dir", type=str, nargs=1, help='Output ADNI directory.
 parser.add_argument("--clean", action="store_true", help="Clean out directory of output files")
 parser.add_argument("--num_threads", type=int, nargs=1, default=[50], help="(optional) number of threads (default 50)")
 
-os.environ["ANTSPATH"] = "/homedtic/gsanroma/CODE/LIB/ANTs/build/bin"
-os.environ["ANTSSCRIPTS"] = "/homedtic/gsanroma/CODE/LIB/ANTs/Scripts"
+os.environ["ANTSPATH"] = "/homedtic/gmarti/LIB/ANTsbin/bin"
+os.environ["ANTSSCRIPTS"] = "/homedtic/gmarti/LIB/ANTs/Scripts"
 
 args = parser.parse_args()
 
@@ -66,13 +66,14 @@ assert len(img_list), "List of input images is empty"
 # control number of jobs
 njobs = 0
 
+# No need for this, input comes from metadata
 # input directory
 in_dir = args.in_dir[0]
 
+#no need for this, output comes from other place
 # create output directory
-if not os.path.exists(args.out_dir[0]):
-    os.makedirs(args.out_dir[0])
-
+# if not os.path.exists(args.out_dir[0]):
+#     os.makedirs(args.out_dir[0])
 
 #
 # Pipeline
@@ -81,18 +82,17 @@ if not os.path.exists(args.out_dir[0]):
 if args.n4:
 
     n4_path = os.path.join(os.environ['ANTSPATH'], 'N4BiasFieldCorrection')
-    wait_jobs = [os.path.join(os.environ['ANTSSCRIPTS'], "waitForSGEQJobs.pl"), '0', '10']
+    wait_jobs = [os.path.join(os.environ['ANTSSCRIPTS'], "waitForSlurmJobs.pl"), '0', '10']
 
     for img_file in img_list:
         # The output path is in the out_dir, following the same structure as
         # the output.
-        out_path = os.path.join(args.out_dir[0], img_file)
-
+        out_path = img_file.replace(in_dir, args.out_dir[0])
         if not os.path.exists(os.path.dirname(out_path)):
             os.makedirs(os.path.dirname(out_path))
 
         cmdline = [n4_path, '--image-dimensionality', '3']
-        cmdline += ['--input-image', os.path.join(in_dir, img_file)]
+        cmdline += ['--input-image', img_file]
         cmdline += ['--shrink-factor', '3']
         cmdline += ['--convergence', '50x50x30x20', '1e-6']
         cmdline += ['--bspline-fitting', '300']
@@ -103,7 +103,7 @@ if args.n4:
         qsub_launcher = Launcher(' '.join(cmdline))
         qsub_launcher.name = os.path.splitext(os.path.basename(img_file))[0]
         qsub_launcher.folder = os.path.dirname(out_path)
-        qsub_launcher.queue = 'short.q'
+        qsub_launcher.queue = 'short'
         job_id = qsub_launcher.run()
         njobs = njobs + 1
         if is_hpc:
@@ -113,7 +113,7 @@ if args.n4:
             print("Limit found. Wait for jobs to finish...")
             call(wait_jobs)
             njobs = 0
-            wait_jobs = [os.path.join(os.environ['ANTSSCRIPTS'], "waitForSGEQJobs.pl"), '0', '10']
+            wait_jobs = [os.path.join(os.environ['ANTSSCRIPTS'], "waitForSlurmJobs.pl"), '0', '10']
 
     if is_hpc:
         print("Waiting for remaining jobs to finish...")
@@ -127,18 +127,17 @@ if args.n4:
 if args.denoising:
 
     denoise_path = os.path.join(os.environ['ANTSPATH'], 'DenoiseImage')
-    wait_jobs = [os.path.join(os.environ['ANTSSCRIPTS'], "waitForSGEQJobs.pl"), '0', '60']
+    wait_jobs = [os.path.join(os.environ['ANTSSCRIPTS'], "waitForSlurmJobs.pl"), '0', '60']
 
     for img_file in img_list:
         # The output path is in the out_dir, following the same structure as
         # the output.
-        out_path = os.path.join(args.out_dir[0], img_file)
-
+        out_path = img_file.replace(in_dir, args.out_dir[0])
         if not os.path.exists(os.path.dirname(out_path)):
             os.makedirs(os.path.dirname(out_path))
 
         cmdline = [denoise_path, '--image-dimensionality', '3']
-        cmdline.extend(['--input-image', os.path.join(in_dir, img_file)])
+        cmdline.extend(['--input-image', img_file])
         cmdline.extend(['--noise-model', 'Rician'])
         cmdline += ['--output', out_path]
 
@@ -147,7 +146,7 @@ if args.denoising:
         qsub_launcher = Launcher(' '.join(cmdline))
         qsub_launcher.name = os.path.splitext(os.path.basename(img_file))[0]
         qsub_launcher.folder = os.path.dirname(out_path)
-        qsub_launcher.queue = 'short.q'
+        qsub_launcher.queue = 'short'
         job_id = qsub_launcher.run()
         njobs = njobs + 1
 
@@ -158,7 +157,7 @@ if args.denoising:
             print("Limit found. Wait for jobs to finish...")
             call(wait_jobs)
             njobs = 0
-            wait_jobs = [os.path.join(os.environ['ANTSSCRIPTS'], "waitForSGEQJobs.pl"), '0', '10']
+            wait_jobs = [os.path.join(os.environ['ANTSSCRIPTS'], "waitForSlurmJobs.pl"), '0', '10']
 
     if is_hpc:
         print("Waiting for remaining jobs to finish...")
@@ -187,14 +186,14 @@ if args.histmatch:
         sitk.WriteImage(aux, args.template_file[0]+'_norm.nii')
 
     imagemath_path = os.path.join(os.environ['ANTSPATH'],'ImageMath')
-    wait_jobs = [os.path.join(os.environ['ANTSSCRIPTS'], "waitForSGEQJobs.pl"), '0', '10']
+    wait_jobs = [os.path.join(os.environ['ANTSSCRIPTS'], "waitForSlurmJobs.pl"), '0', '10']
 
     for img_file in img_list:
         # The output path is in the out_dir, following the same structure as
         # the output.
 
-        in_file = os.path.join(in_dir, img_file)
-        out_file = os.path.join(args.out_dir[0], img_file)
+        in_file = img_file
+        out_path = img_file.replace(in_dir, args.out_dir[0])
         tpl_file = args.template_file[0]+'_norm.nii'
 
         if not os.path.exists(os.path.dirname(out_path)):
@@ -207,7 +206,7 @@ if args.histmatch:
         qsub_launcher = Launcher(' '.join(cmdline))
         qsub_launcher.name = os.path.splitext(os.path.basename(img_file))[0]
         qsub_launcher.folder = os.path.dirname(out_path)
-        qsub_launcher.queue = 'short.q'
+        qsub_launcher.queue = 'short'
         job_id = qsub_launcher.run()
         njobs = njobs + 1
 
@@ -218,7 +217,7 @@ if args.histmatch:
             print("Limit found. Wait for jobs to finish...")
             call(wait_jobs)
             njobs = 0
-            wait_jobs = [os.path.join(os.environ['ANTSSCRIPTS'], "waitForSGEQJobs.pl"), '0', '10']
+            wait_jobs = [os.path.join(os.environ['ANTSSCRIPTS'], "waitForSlurmJobs.pl"), '0', '10']
 
 
     if is_hpc:

@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH -J register_baseline
-#SBATCH -p default
+#SBATCH -p high
 #SBATCH --workdir=/homedtic/gmarti/LOGS
 #SBATCH -o reg_b_%J.out # STDOUT
 #SBATCH -e reg_b_%j.err # STDERR
