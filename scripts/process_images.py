@@ -50,7 +50,7 @@ else:
 n_total_jobs = int(args.num_threads[0])
 
 if not args.histmatch:
-    assert args.template_file is None and args.template_maskout_mask is None and not args.template_norm, "Unnecessary template if not histmatch"
+    assert args.template_file is None and not args.template_norm, "Unnecessary template if not histmatch"
 
 if args.histmatch:
     assert args.template_file is not None, "Need template for histogram matching"
@@ -59,7 +59,7 @@ if args.template_file is not None:
     assert os.path.exists(args.template_file[0]), "Template file not found"
 
 # Get list of input images.
-metadata = pd.read_csv(args.in_metadata[0])
+metadata = pd.read_csv(args.in_metadata[0]).dropna()
 img_list = metadata["MRI_PATH"].values
 assert len(img_list), "List of input images is empty"
 
@@ -87,6 +87,7 @@ if args.n4:
     for img_file in img_list:
         # The output path is in the out_dir, following the same structure as
         # the output.
+
         out_path = img_file.replace(in_dir, args.out_dir[0])
         if not os.path.exists(os.path.dirname(out_path)):
             os.makedirs(os.path.dirname(out_path))
@@ -132,6 +133,10 @@ if args.denoising:
     for img_file in img_list:
         # The output path is in the out_dir, following the same structure as
         # the output.
+        print('Working with ' + str(img_file))
+        if img_file == '':
+            continue
+
         out_path = img_file.replace(in_dir, args.out_dir[0])
         if not os.path.exists(os.path.dirname(out_path)):
             os.makedirs(os.path.dirname(out_path))

@@ -34,8 +34,10 @@ if platform == 'darwin':
 else:
     is_hpc = True
 
+num_gripe()
 
-# One of the arguments must be a directory with all the baselines, such that is easy to, given a followup, we can perform in a loop all the registrations with the correct 
+
+# One of the arguments must be a directory with all the baselines, such that is easy to, given a followup, we can perform in a loop all the registrations with the correct
 
 os.environ["ANTSPATH"] = "/homedtic/gsanroma/CODE/LIB/ANTs/build/bin"
 
@@ -160,7 +162,7 @@ if args.n4:
         print "Launching N4 for {}".format(img_file)
 
         qsub_launcher = Launcher(' '.join(cmdline))
-        
+
         qsub_launcher.name = os.path.splitext(os.path.basename(img_file))[0]
 
         if (baseline == '0'):
@@ -173,9 +175,9 @@ if args.n4:
 
         if is_hpc:
             wait_jobs += [job_id]
-        
+
         n_jobs += 1
-        
+
         if is_hpc and n_total_jobs <= n_jobs:
             print "Waiting for N4 jobs to finish..."
             call(wait_jobs)
@@ -210,7 +212,7 @@ if args.denoising:
             in_dir = args.out_dir_followups[0]
         cmdline = [denoise_path, '--image-dimensionality', '3']
         cmdline.extend(['--input-image', os.path.join(in_dir, img_file)])
-        
+
         cmdline.extend(['--noise-model', 'Rician'])
 
 
@@ -232,9 +234,9 @@ if args.denoising:
 
         if is_hpc:
             wait_jobs += [job_id]
-        
+
         n_jobs += 1
-        
+
         if is_hpc and n_total_jobs <= n_jobs:
             print "Waiting for Denoising jobs to finish..."
             call(wait_jobs)
@@ -300,7 +302,7 @@ if args.histmatch:
         else:
             in_file = os.path.join(args.out_dir_followups[0], img_file)
             out_file = os.path.join(args.out_dir_followups[0], img_file)
-        
+
         cmdline = [imagemath_path, '3', out_file, 'TruncateImageIntensity', in_file, '0.05', '0.95']
 
         print("Launching histogram truncate of {}".format(img_file))
@@ -316,7 +318,7 @@ if args.histmatch:
 
         if is_hpc:
             wait_jobs += [job_id]
-        
+
         n_jobs += 1
 
         if is_hpc and n_total_jobs <= n_jobs:
@@ -355,9 +357,9 @@ if args.histmatch:
 
         if is_hpc:
             wait_jobs += [job_id]
-        
+
         n_jobs += 1
-        
+
         if is_hpc and n_total_jobs <= n_jobs:
             print("Waiting for histogram matching jobs to finish...")
             call(wait_jobs)
@@ -374,7 +376,3 @@ if args.histmatch:
         call(wait_jobs)
 
     print("Histogram matching finished.")
-
-
-
-
