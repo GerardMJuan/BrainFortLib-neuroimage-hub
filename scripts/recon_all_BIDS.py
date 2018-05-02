@@ -8,7 +8,7 @@ from bids.grabbids import BIDSLayout
 import argparse
 import os
 from fnmatch import fnmatch
-from scheduler import Launcher
+from libs.scheduler import Launcher
 from sys import platform
 from subprocess import call
 import pandas as pd
