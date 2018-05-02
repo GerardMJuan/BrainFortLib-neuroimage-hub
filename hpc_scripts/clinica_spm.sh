@@ -20,7 +20,7 @@ export PATH=$PATH:/homedtic/gmarti/LIB/dcm2niix-master/bin/bin
 export ANTSPATH=/homedtic/gmarti/LIB/ANTsbin/bin
 export ANTSSCRIPTS=/homedtic/gmarti/LIB/ANTs/Scripts
 export PATH=${ANTSPATH}:${PATH}
-export SPM_HOME=/homedtic/gmarti/LIB/spm12
+export SPM_DIR=/homedtic/gmarti/LIB/spm12
 
 export FREESURFER_HOME=/usr/local/freesurfer
 source $FREESURFER_HOME/SetUpFreeSurfer.sh

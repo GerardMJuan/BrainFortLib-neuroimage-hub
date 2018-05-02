@@ -102,3 +102,7 @@ ENV/
 
 hpc_scripts/logs
 hpc_scripts/core
+
+
+# ignore pybids
+scripts/libs/pybids

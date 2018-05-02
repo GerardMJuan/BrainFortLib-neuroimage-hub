@@ -48,11 +48,12 @@ else:
 
 # Check that bids directory is not empty(TODO)
 project_root = args.in_dir[0]
+print(project_root)
 layout = BIDSLayout(project_root)
 assert len(layout.get_subjects()) > 0, "No subjects in directory!"
 
 # Create img list
-files = layout.get(extensions='.nii.gz', return_type='dir')
+files = layout.get(extensions='.nii.gz', modality='anat')
 
 # Checking template file
 assert os.path.exists(args.template_file[0]), "Template file not found"
@@ -70,7 +71,7 @@ assert resolution > 0 and resolution < 5, "Wrong resolution"
 
 # create output directory
 # output directory is of the form: bids directory/derivatives/antsMNIspace/(TODO)
-out_dir = args.in_dir[0] + '/derivatives/antsMNIspace/'
+out_dir = args.in_dir[0] + 'derivatives/antsMNIspace/'
 if not os.path.exists(out_dir):
     os.makedirs(out_dir)
 
@@ -83,14 +84,17 @@ if not os.path.exists(out_dir):
 antsregistration_path = os.path.join(os.environ['ANTSPATH'], 'antsRegistration')
 wait_jobs = [os.path.join(os.environ['ANTSSCRIPTS'], "waitForSlurmJobs.pl"), '0', '10']
 
-for img_path in files:
+for img in files:
+    img_path = img.filename
     img_file = os.path.basename(img_path)
     img_name = img_file.split(args.img_suffix[0])[0]
 
     # adapt out_dir to bids specification, copy part of the path of the input image
     # ha de ser out_dir + /sub/anat/
-    subname = os.path.basename(os.path.dirname(os.path.dirname(img_path)))
-    out_dir_img = out_dir + '/' + subname + '/anat/'
+    session = os.path.basename(os.path.dirname(os.path.dirname(img_path)))
+    out_dir_img = out_dir + img.subject + '/' + img.session + '/' + img.modality + '/'
+    if not os.path.exists(out_dir_img):
+        os.makedirs(out_dir_img)
 
     if args.use_labels is not None:
         lab_path = os.path.join(args.use_labels[0], img_name + args.use_labels[1])
@@ -231,21 +235,22 @@ for img_path in files:
         # Remove extra files from directory
         filelist = [ f for f in os.listdir(out_dir_img) if (not f.endswith(".nii.gz") and not f.endswith(".mat")) ]
         for f in filelist:
-            os.remove(os.path.join(args.out_dir[0], f))
+            os.remove(os.path.join(out_dir_img, f))
 
         # Put njobs and waitjobs at 0 again
         n_jobs = 0
         wait_jobs = [os.path.join(os.environ['ANTSSCRIPTS'], "waitForSlurmJobs.pl"), '0', '10']
 
+    break
 # Wait for the last remaining jobs to finish (in cluster)
 if is_hpc:
     print("Waiting for registration jobs to finish...")
     call(wait_jobs)
 
     ## Remove extra files from directory
-    filelist = [ f for f in os.listdir(args.out_dir[0]) if (not f.endswith(".nii.gz") and not f.endswith(".mat")) ]
+    filelist = [ f for f in os.listdir(out_dir_img) if (not f.endswith(".nii.gz") and not f.endswith(".mat")) ]
     for f in filelist:
-      os.remove(os.path.join(args.out_dir[0], f))
+      os.remove(os.path.join(out_dir_img, f))
 
     # Put njobs at 0 again
     n_jobs = 0
