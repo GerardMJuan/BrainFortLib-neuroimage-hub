@@ -1,3 +1,4 @@
+#!/bin/
 """
 Script to register all images to a given template.abs
 
@@ -13,6 +14,7 @@ from sys import platform
 from subprocess import call
 import pandas as pd
 import numpy as np
+
 
 parser = argparse.ArgumentParser(description='Registers images to template. Can use initial transformation.')
 parser.add_argument("--in_dir", type=str, nargs=1, required=True, help='BIDS directory input images')
@@ -56,45 +58,11 @@ out_dir = args.output_path[0]
 if not os.path.exists(out_dir):
     os.makedirs(out_dir)
 
-# Create json file indicating info about the script (TODO)
-# This i dunnot know
-
-#
 # Main loop
 #
 wait_jobs = [os.path.join(os.environ['ANTSSCRIPTS'], "waitForSlurmJobs.pl"), '0', '10']
 
-for img in files:
-    if img.subject not in files_true:
-        continue
-    """
-    if os.path.exists(out_dir + '/' + img.subject):
-        # If already processed, continue
-        continue
-    """
-    img_path = img.filename
-    img_file = os.path.basename(img_path)
-    img_name = img_file.split(args.img_suffix[0])[0]
-    # adapt out_dir to bids specification, copy part of the path of the input image
-    # ha de ser out_dir + /sub/anat/
-    cmdline = ['recon-all', '-i', img_path, '-subjid', img.subject, '-sd', out_dir, '-all', '-no-isrunning']
-
-    # cmdline = ['recon-all', '-subjid', img.subject, '-sd', out_dir, '-all', '-no-isrunning']
-
-    print(' '.join(cmdline))
-    print("Launching registration of file {}".format(img_file))
-
-    qsub_launcher = Launcher(' '.join(cmdline))
-    qsub_launcher.name = img_file.split(os.extsep, 1)[0]
-    qsub_launcher.folder = out_dir
-    qsub_launcher.queue = 'high'
-    job_id = qsub_launcher.run()
-
-    if is_hpc:
-        wait_jobs += [job_id]
-
-    n_jobs += 1
-
+for subject in df_subjects.itertuples():
     # Wait for the jobs to finish (in cluster)
     if is_hpc and n_total_jobs <= n_jobs:
         print("Waiting for jobs to finish...")
@@ -104,6 +72,35 @@ for img in files:
         n_jobs = 0
         wait_jobs = [os.path.join(os.environ['ANTSSCRIPTS'], "waitForSlurmJobs.pl"), '0', '10']
 
+    patient_id = 'ADNI' + subject.PTID[0:3] + 'S' + subject.PTID[6:]
+    img = layout.get(subject=patient_id)[0]
+    img_path = img.filename
+    img_file = os.path.basename(img_path)
+    img_name = img_file.split(args.img_suffix[0])[0]
+
+    # Depending on fs_status column, do one thing or another
+    if subject.fs_status == 'Done':
+        cmdline = ['recon-all', '-subjid', img.subject, '-sd', out_dir, '-qcache', '-no-isrunning']
+    # elif subject.fs_status == 3:
+    #    # Do recon all 3
+    #    cmdline = ['recon-all', '-subjid', img.subject, '-sd', out_dir, '-autorecon3', '-no-isrunning']
+    else:
+        continue
+    #     cmdline = ['recon-all', '-i', img_path, '-subjid', img.subject, '-sd', out_dir, '-all', '-cw256', '-no-isrunning']
+
+    print(' '.join(cmdline))
+    print("Launching registration of file {}".format(img_file))
+
+    qsub_launcher = Launcher(' '.join(cmdline))
+    qsub_launcher.name = img_file.split(os.extsep, 1)[0] + '_new'
+    qsub_launcher.folder = out_dir
+    qsub_launcher.queue = 'high'
+    job_id = qsub_launcher.run()
+
+    if is_hpc:
+        wait_jobs += [job_id]
+
+    n_jobs += 1
 
 # Wait for the last remaining jobs to finish (in cluster)
 if is_hpc:

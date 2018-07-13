@@ -51,7 +51,7 @@ class Launcher(object):
             f.write("#SBATCH -p {}\n".format(self.queue))
             f.write("#SBATCH -o {}\n".format(outfile))
             f.write("#SBATCH -e {}\n".format(errfile))
-            f.write("#SBATCH --mem {}\n".format(4096))
+            f.write("#SBATCH --mem {}\n".format(6144))
             if self.run_in_gpu:
                 f.write("#SBATCH -l gpu=1\n")
             if self.omp_num_threads > 0:
@@ -60,13 +60,14 @@ class Launcher(object):
             f.write("#SBATCH --export=ANTSPATH=%s\n" % os.environ['ANTSPATH'])
             f.write("#SBATCH --export=ANTSSCRIPTS=%s\n" % os.environ['ANTSSCRIPTS'])
             # For Freesurfer
-
+            """
             f.write("source /homedtic/gmarti/ENV/clinica/bin/activate\n")
             f.write("FSLDIR=/homedtic/gmarti/LIB/fsl\n")
             f.write(". ${FSLDIR}/etc/fslconf/fsl.sh\n")
             f.write("export PATH=${FSLDIR}/bin:${PATH}\n")
             f.write("export FREESURFER_HOME=/homedtic/gmarti/LIB/freesurfer\n")
             f.write(". $FREESURFER_HOME/SetUpFreeSurfer.sh\n")
+            """
         else:
             executable = "bash"
 

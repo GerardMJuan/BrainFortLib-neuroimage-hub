@@ -8,15 +8,17 @@ from bids.grabbids import BIDSLayout
 import argparse
 import os
 from fnmatch import fnmatch
-from scheduler import Launcher
+from libs.scheduler import Launcher
 from sys import platform
 from subprocess import call
 import numpy as np
 
 parser = argparse.ArgumentParser(description='Registers images to template. Can use initial transformation.')
 parser.add_argument("--in_dir", type=str, nargs=1, required=True, help='BIDS directory input images')
+parser.add_argument("--in_name", type=str, nargs=1, required=True, help='derivative input directory')
 parser.add_argument("--img_suffix", type=str, nargs=1, required=True, help='suffix of input images')
 parser.add_argument("--template_file", type=str, nargs=1, required=True, help='template image')
+parser.add_argument("--out_name", type=str, nargs=1, required=True, help='Name of output image')
 parser.add_argument("--template_mask", type=str, nargs=1, help="(optional) to limit registration to a region (better start with good initialization)")
 parser.add_argument("--init_warp_dir_suffix", type=str, nargs='+', action="append", help="(optional) dir, suffix (and inverse flag for affine) of warps to be used as initialization (in order)")
 parser.add_argument("--transform", type=str, nargs=2, required=True, help="Rigid[*] | Affine[*] | Syn[*], 1<=resolution<=4 (with \'*\' do all lower resolutions too)")
@@ -24,6 +26,7 @@ parser.add_argument("--out_warp_intfix", type=str, nargs=1, required=True, help=
 parser.add_argument("--output_warped_image", action="store_true", help="output warped images (image name w/o ext + intfix + Warped.nii.gz)")
 parser.add_argument("--float", action="store_true", help='use single precision computations')
 parser.add_argument("--use_labels", type=str, nargs='+', help='use labels for registration: label_dir, label_suffix, template_labels, [weights_list_for_each_stage]')
+parser.add_argument("--baseline", action="store_true", help="apply only to baseline images")
 parser.add_argument("--number_jobs", type=int, nargs=1, required=True, help="Number of jobs for the cluster")
 
 
@@ -33,10 +36,11 @@ parser.add_argument("--number_jobs", type=int, nargs=1, required=True, help="Num
 os.environ["ANTSPATH"] = "/homedtic/gmarti/LIB/ANTsbin/bin"
 os.environ["ANTSSCRIPTS"] = "/homedtic/gmarti/LIB/ANTs/Scripts"
 
-n_jobs = 0
-n_total_jobs = 10
 
 args = parser.parse_args()
+
+n_jobs = 0
+n_total_jobs = int(args.number_jobs[0])
 
 if platform == 'darwin':
     is_hpc = False
@@ -46,14 +50,17 @@ else:
 # Initial checks
 #
 
-# Check that bids directory is not empty(TODO)
-project_root = args.in_dir[0]
+# Check that bids directory is not empty
+project_root = args.in_dir[0] + 'derivatives/' + args.in_name[0]
 print(project_root)
 layout = BIDSLayout(project_root)
 assert len(layout.get_subjects()) > 0, "No subjects in directory!"
 
 # Create img list
-files = layout.get(extensions='.nii.gz', modality='anat')
+if args.baseline:
+    files = layout.get(extensions='.nii.gz', modality='anat', session='M00')
+else:
+    files = layout.get(extensions='.nii.gz', modality='anat')
 
 # Checking template file
 assert os.path.exists(args.template_file[0]), "Template file not found"
@@ -71,12 +78,11 @@ assert resolution > 0 and resolution < 5, "Wrong resolution"
 
 # create output directory
 # output directory is of the form: bids directory/derivatives/antsMNIspace/(TODO)
-out_dir = args.in_dir[0] + 'derivatives/antsMNIspace/'
+out_dir = args.in_dir[0] + 'derivatives/' + args.out_name[0]
 if not os.path.exists(out_dir):
     os.makedirs(out_dir)
 
 # Create json file indicating info about the script (TODO)
-# This i dunnot know
 
 #
 # Main loop
@@ -92,7 +98,7 @@ for img in files:
     # adapt out_dir to bids specification, copy part of the path of the input image
     # ha de ser out_dir + /sub/anat/
     session = os.path.basename(os.path.dirname(os.path.dirname(img_path)))
-    out_dir_img = out_dir + img.subject + '/' + img.session + '/' + img.modality + '/'
+    out_dir_img = out_dir + '/' + img.subject + '/' + img.session + '/' + img.modality + '/'
     if not os.path.exists(out_dir_img):
         os.makedirs(out_dir_img)
 
@@ -211,7 +217,7 @@ for img in files:
     #
     # launch
     cmdline += ['-v','1']
-    print(' '.join(cmdline))
+    # print(' '.join(cmdline))
     print("Launching registration of file {}".format(img_file))
 
 	#os.system(' '.join(cmdline))
@@ -241,7 +247,6 @@ for img in files:
         n_jobs = 0
         wait_jobs = [os.path.join(os.environ['ANTSSCRIPTS'], "waitForSlurmJobs.pl"), '0', '10']
 
-    break
 # Wait for the last remaining jobs to finish (in cluster)
 if is_hpc:
     print("Waiting for registration jobs to finish...")
