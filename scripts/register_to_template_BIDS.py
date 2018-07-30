@@ -12,6 +12,7 @@ from libs.scheduler import Launcher
 from sys import platform
 from subprocess import call
 import numpy as np
+import time
 
 parser = argparse.ArgumentParser(description='Registers images to template. Can use initial transformation.')
 parser.add_argument("--in_dir", type=str, nargs=1, required=True, help='BIDS directory input images')
@@ -21,7 +22,8 @@ parser.add_argument("--template_file", type=str, nargs=1, required=True, help='t
 parser.add_argument("--out_name", type=str, nargs=1, required=True, help='Name of output image')
 parser.add_argument("--template_mask", type=str, nargs=1, help="(optional) to limit registration to a region (better start with good initialization)")
 parser.add_argument("--init_warp_dir_suffix", type=str, nargs='+', action="append", help="(optional) dir, suffix (and inverse flag for affine) of warps to be used as initialization (in order)")
-parser.add_argument("--transform", type=str, nargs=2, required=True, help="Rigid[*] | Affine[*] | Syn[*], 1<=resolution<=4 (with \'*\' do all lower resolutions too)")
+parser.add_argument("--transform", type=str, nargs=2, required=True, help="Rigid[*] | Affine[*] | Syn[*],BSplineSyN[*] 1<=resolution<=4 (with \'*\' do all lower resolutions too)")
+parser.add_argument("--c_point", type=str, nargs=1, required=False, help='Spacing control points for BSpline transformation (optional)')
 parser.add_argument("--out_warp_intfix", type=str, nargs=1, required=True, help="intfix for output warps")
 parser.add_argument("--output_warped_image", action="store_true", help="output warped images (image name w/o ext + intfix + Warped.nii.gz)")
 parser.add_argument("--float", action="store_true", help='use single precision computations')
@@ -75,6 +77,10 @@ if args.use_labels is not None:
 
 resolution = int(args.transform[1])
 assert resolution > 0 and resolution < 5, "Wrong resolution"
+
+# If BSpline, need to be sure that
+if args.transform[0].rstrip('*') == 'BSplineSyN':
+    assert args.c_point[0], "Spacing control points not included"
 
 # create output directory
 # output directory is of the form: bids directory/derivatives/antsMNIspace/(TODO)
@@ -166,7 +172,7 @@ for img in files:
         cmdline += ['--smoothing-sigmas', smooth_sig]
         cmdline += ['--shrink-factors', shrink_fac]
 
-    if args.transform[0].rstrip('*') == 'Affine' or (args.transform[0].rstrip('*') == 'Syn' and not args.init_warp_dir_suffix):
+    if args.transform[0].rstrip('*') == 'Affine' or ((args.transform[0].rstrip('*') == 'Syn' or args.transform[0].rstrip('*') == 'BSplineSyN') and not args.init_warp_dir_suffix):
 
         cmdline += ['--transform', 'Affine[0.1]']
 
@@ -208,6 +214,27 @@ for img in files:
         cmdline += ['--smoothing-sigmas', smooth_sig]
         cmdline += ['--shrink-factors', shrink_fac]
 
+
+    if args.transform[0].rstrip('*') == 'BSplineSyN':
+
+        cmdline += ['--transform', 'BSplineSyN[0.1,' + args.c_point[0] + ',0]']
+
+        w_img, w_lab = 1.0, 0.0
+        if args.use_labels is not None:
+            if len(args.use_labels) > weight_idx:
+                w_lab = float(args.use_labels[weight_idx])
+            w_img = 1.0 - w_lab
+            weight_idx += 1
+
+        cmdline += ['--metric', 'CC[{},{},{},4]'.format(args.template_file[0], img_path, w_img)]
+        if w_lab > 0.0:
+            cmdline += ['--metric', 'MeanSquares[{},{},{}]'.format(args.use_labels[2], lab_path, w_lab)]
+
+        cmdline += ['--convergence', '[{},1e-9,15]'.format('x'.join(its_syn))]
+        cmdline += ['--smoothing-sigmas', smooth_sig]
+        cmdline += ['--shrink-factors', shrink_fac]
+
+
     #
     # mask
 
@@ -225,8 +252,10 @@ for img in files:
     qsub_launcher = Launcher(' '.join(cmdline))
     qsub_launcher.name = img_file.split(os.extsep, 1)[0]
     qsub_launcher.folder = out_dir_img
-    qsub_launcher.queue = 'short'
+    qsub_launcher.queue = 'medium'
     job_id = qsub_launcher.run()
+
+    time.sleep(2)
 
     if is_hpc:
         wait_jobs += [job_id]
@@ -239,9 +268,9 @@ for img in files:
         call(wait_jobs)
 
         # Remove extra files from directory
-        filelist = [ f for f in os.listdir(out_dir_img) if (not f.endswith(".nii.gz") and not f.endswith(".mat")) ]
-        for f in filelist:
-            os.remove(os.path.join(out_dir_img, f))
+        # filelist = [ f for f in os.listdir(out_dir_img) if (not f.endswith(".nii.gz") and not f.endswith(".mat")) ]
+        # for f in filelist:
+        #     os.remove(os.path.join(out_dir_img, f))
 
         # Put njobs and waitjobs at 0 again
         n_jobs = 0
@@ -253,9 +282,9 @@ if is_hpc:
     call(wait_jobs)
 
     ## Remove extra files from directory
-    filelist = [ f for f in os.listdir(out_dir_img) if (not f.endswith(".nii.gz") and not f.endswith(".mat")) ]
-    for f in filelist:
-      os.remove(os.path.join(out_dir_img, f))
+    # filelist = [ f for f in os.listdir(out_dir_img) if (not f.endswith(".nii.gz") and not # f.endswith(".mat")) ]
+    # for f in filelist:
+    #   os.remove(os.path.join(out_dir_img, f))
 
     # Put njobs at 0 again
     n_jobs = 0

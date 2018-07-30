@@ -13,7 +13,7 @@ export PYTHONPATH="/homedtic/gmarti/ENV/python2.7:$PYTHONPATH"
 # Variables
 BASE_DIR="/homedtic/gmarti/DATA/Data/ADNI_BIDS"	    # dir containing BIDS data
 SCRIPTS_DIR="/homedtic/gmarti/CODE/upf-nii/scripts"	# dir containing the scripts
-N_THREADS="40"                                       # N of threads for parallel comp.
+N_THREADS="60"                                       # N of threads for parallel comp.
 TEMPLATE="/homedtic/gmarti/DATA/MNI152/icbm_avg_152_t1_tal_nlin_symmetric_VI.nii"
 MASK_TEMPLATE="/homedtic/gmarti/DATA/MNI152/icbm_avg_152_t1_tal_nlin_symmetric_VI_mask.nii"
 
@@ -30,7 +30,7 @@ python $SCRIPTS_DIR/register_to_template_BIDS.py  --in_dir $BASE_DIR/ --in_name 
 
 # Use rigid/affine transformation from followup to BL (affine seems more likely).
 echo "Register to baseline..."
-python $SCRIPTS_DIR/register_to_baseline_BIDS.py  --in_dir $BASE_DIR/ --in_name denoised/ --img_suffix .nii.gz --out_name registered --transform Affine* 1 --out_warp_intfix syn1 --output_warped_image --number_jobs $N_THREADS
+python $SCRIPTS_DIR/register_to_baseline_BIDS.py  --in_dir $BASE_DIR/ --in_name robex/ --img_suffix .nii.gz --out_name registered_baseline --transform Affine* 1 --out_warp_intfix aff1 --output_warped_image --number_jobs $N_THREADS
 
 # Use inverse of registers to propagate the mask of the template to each baseline.
 echo "Propagate mask to baseline..."

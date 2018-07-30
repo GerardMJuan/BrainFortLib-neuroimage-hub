@@ -81,7 +81,11 @@ wait_jobs = [os.path.join(os.environ['ANTSSCRIPTS'], "waitForSlurmJobs.pl"), '0'
 for s in subjects:
     # Get baseline subject
     files = layout.get(subject=s, session='M00', extensions='.nii.gz')
-    baseline = files[0]
+    try:
+        baseline = files[0]
+    except:
+        print('Error in ' + s + ', no baseline.')
+        continue
     baseline_path = baseline.filename
     # Get list of all subjets
     files = layout.get(subject=s, extensions='.nii.gz')
@@ -210,8 +214,8 @@ for s in subjects:
         #
         # launch
         cmdline += ['-v','1']
-        print(' '.join(cmdline))
-        print("Launching registration of file {}".format(img_file))
+        # print(' '.join(cmdline))
+        # print("Launching registration of file {}".format(img_file))
 
     	#os.system(' '.join(cmdline))
 
@@ -249,3 +253,11 @@ if is_hpc:
     n_jobs = 0
 
 print("Registration finished.")
+
+
+Things without baseline, why
+# ADNI006S0681
+# ADNI010S0422
+# ADNI018S0055
+# ADNI141S0915
+# ADNI141S0726

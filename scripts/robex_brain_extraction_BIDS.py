@@ -16,7 +16,6 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--input_dir",type=str, nargs=1, required=True,help="dir of brain images (should contain ROBEX files too)")
 parser.add_argument("--out_dir",type=str, nargs=1, required=True,help="output_dir")
 parser.add_argument("--input_suffix",type=str, nargs=1, required=True,help="valid suffix for brain images")
-parser.add_argument("--strip_suffix",type=str, nargs=1, required=True,help="suffix to be added to stripped images")
 parser.add_argument("--mask_suffix",type=str,help="whether to keep masks")
 parser.add_argument("--number_jobs", type=int, nargs=1, required=True, help="Number of jobs for the cluster")
 
@@ -61,7 +60,7 @@ for img in files:
     if not os.path.exists(out_dir_img):
         os.makedirs(out_dir_img)
 
-    strip_path = os.path.join(out_dir_img + img_file + args.strip_suffix[0])
+    strip_path = os.path.join(out_dir_img + img_file)
 
     # This needs to be changed
     if args.mask_suffix:

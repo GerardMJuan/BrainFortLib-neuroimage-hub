@@ -103,6 +103,8 @@ ENV/
 hpc_scripts/logs
 hpc_scripts/core
 
-
 # ignore pybids
 scripts/libs/pybids
+
+# ignore old scripts and other folders
+scripts/old_scripts/

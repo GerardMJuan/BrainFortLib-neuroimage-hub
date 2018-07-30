@@ -1,3 +1,10 @@
+"""
+Plot the simliarities of a dataset.
+
+Given a file with the similarities of a dataset, plot it
+in a two-dimensional embedding.
+"""
+
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 __author__ = 'gsanroma'
@@ -31,9 +38,6 @@ parser.add_argument("--out_tst_xml", type=str, nargs=1, help='out_file_xml')
 parser.add_argument("--create_symlinks", type=str, nargs=5, help='symlink_dir_prefix, base_dir, img_suffix, label_suffix, scores_img_suffix')
 
 args = parser.parse_args()
-#args = parser.parse_args('--scores_file /Users/gsanroma/DATA/DATABASES/ADNI/atlases/NormalizedCorrelation_S4_masked.dat --num_atlas 35 --out_fig /Users/gsanroma/DATA/DATABASES/ADNI/atlases/NormalizedCorrelation_S4_masked.png'.split())
-# args = parser.parse_args('--scores_file /Users/gsanroma/DATA/DATABASES/ADNI/atlases/NormCorr_mA4_masked.dat --num_atlas 35 --out_fig /Users/gsanroma/DATA/DATABASES/ADNI/atlases/NormCorr_mA4_masked.png --out_tst_xml /Users/gsanroma/DATA/DATABASES/ADNI/atlases/tst_mA4_masked.xml'.split())
-# args = parser.parse_args('--scores_file /Users/gsanroma/DATA/DATABASES/ADNI/atlases/NormCorr_mA4_masked.dat --num_atlas 35 --create_symlinks /Users/gsanroma/DATA/DATABASES/ADNI/atlases/mA4_masked /Users/gsanroma/DATA/DATABASES/ADNI/atlases/data_processed _brain.nii.gz _labels.nii.gz _brain_mA4XtplWarped.nii.gz'.split())
 
 f = open(args.scores_file[0], 'rb')
 #s = f.read()
@@ -46,9 +50,6 @@ f.close()
 assert in_dir == in2_dir and in_files_list == in2_files_list, "Not same files"
 
 Natlas = args.num_atlas[0]
-
-# Select the most spread images according to manifold embedding
-#print(test)
 
 plt.matshow(scores,vmin=0.65, vmax=1.0, cmap='hot')
 plt.colorbar()

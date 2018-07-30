@@ -1,5 +1,5 @@
 """
-Script to visualize slices from
+Script to visualize slices from a dataset of MRI images.
 
 This script is used for easy and quick checking of .nii 3D images. It saves to disk several png images
 of determined slices of the image. Position of slices can be determined. Input directory should be a BIDS
@@ -24,7 +24,7 @@ parser.add_argument("--out_dir",type=str,nargs=1, required=True, help="output di
 parser.add_argument("--slices",type=str,nargs=1, required=False,  help="(optional) list of slices (separate by commas)")
 
 # Test of execution
-# python /homedtic/gmarti/CODE/upf-nii/scripts/utils/visualize_slices.py --in_dir /homedtic/gmarti/DATA/Data/ADNI_BIDS/derivatives/noskull --input_suffix .nii.gz --out_dir  /homedtic/gmarti/DATA/Data/png_samples/
+# python /homedtic/gmarti/CODE/upf-nii/scripts/utils/visualize_slices.py --input_dir /homedtic/gmarti/DATA/Data/ADNI_BIDS/derivatives/noskull --in_suffix .nii.gz --out_dir  /homedtic/gmarti/DATA/Data/png_samples/
 
 #TODO add perspective to print. Per default, it prints it by
 args = parser.parse_args()
@@ -67,9 +67,20 @@ for img in files:
         print('NYI')
         # TODO
     else:
-        sl = t1.shape[0]//2
         # Save it to disk
+        sl = t1.shape[0]//2
         img_final = np.squeeze(t1[sl, :, :])
-        print(img_final.shape)
-        name_img = img.subject + '_' + img.session + '_' + str(sl) + '_nosk.png'
+        name_img = img.subject + '_' + img.session + '_' + str(sl) + '1_nosk.png'
+        plt.imsave(out_dir + name_img, img_final, cmap='gray')
+
+        # Save it to disk
+        sl = t1.shape[1]//2
+        img_final = np.squeeze(t1[:, sl, :])
+        name_img = img.subject + '_' + img.session + '_' + str(sl) + '2_nosk.png'
+        plt.imsave(out_dir + name_img, img_final, cmap='gray')
+
+        # Save it to disk
+        sl = t1.shape[2]//2
+        img_final = np.squeeze(t1[:, :, sl])
+        name_img = img.subject + '_' + img.session + '_' + str(sl) + '3_nosk.png'
         plt.imsave(out_dir + name_img, img_final, cmap='gray')

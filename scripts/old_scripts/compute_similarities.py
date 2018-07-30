@@ -26,7 +26,6 @@ args = parser.parse_args()
 # args = parser.parse_args('--in_dir /Users/gsanroma/DATA/DATABASES/ADNI/atlases/registration_100x100x0x0 --in_suffix _brainXtemplateWarped.nii.gz --method Correlation --out_file /Users/gsanroma/DATA/DATABASES/ADNI/atlases/Correlation.dat'.split())
 
 os.environ["ANTSPATH"] = "/homedtic/gsanroma/CODE/LIB/ANTs/build/bin"
-
 os.environ["ANTSSCRIPTS"] = "/homedtic/gsanroma/CODE/LIB/ANTs/Scripts"
 
 n_jobs = 0
@@ -128,7 +127,7 @@ for i in range(len(in_files_list)):
     if sid_index_1 == -1:
         sid_index_1 = sid_index
     sampleid_1 = in_files_list[i][sid_index_1+1:sid_index_1+7]
-    
+
     if is_hpc:
         wait_jobs = [os.path.join(os.environ['ANTSSCRIPTS'], "waitForSGEQJobs.pl"), '0', '10']
 
@@ -213,7 +212,7 @@ for i in range(len(in_files_list)):
                     print('It works!')
                     err_file = os.path.join(tmp_dir, "{0}.err".format(job_name))
                     sh_file = os.path.join(tmp_dir, "{0}.sh".format(job_name))
-                    
+
                     try:
                         os.remove(out_file)
                         os.remove(err_file)
@@ -274,7 +273,7 @@ for i in range(len(in_files_list)):
             if sid_index_2 == -1:
                 sid_index_2 = sid_index
             sampleid_2 = in_files_list[i2][sid_index_2+1:sid_index_2+7]
-            
+
             out_file = os.path.join(tmp_dir, "{0}X{1}.out".format(RID_1 + '_' + sampleid_1, RID_2 + '_' + sampleid_2))
 
             try:
@@ -289,7 +288,7 @@ for i in range(len(in_files_list)):
 
             err_file = os.path.join(tmp_dir, "{0}X{1}.err".format(RID_1 + '_' + sampleid_1, RID_2 + '_' + sampleid_2))
             sh_file = os.path.join(tmp_dir, "{0}X{1}.sh".format(RID_1 + '_' + sampleid_1, RID_2 + '_' + sampleid_2))
-            
+
             try:
                 os.remove(out_file)
                 os.remove(err_file)
@@ -297,7 +296,7 @@ for i in range(len(in_files_list)):
             except:
                 pass
        '''
-            
+
 print("Finish!")
 f = open(args.out_file[0], 'wb')
 dump((in_dir, in_files_list, in2_dir, in2_files_list, scores), f)
@@ -305,9 +304,3 @@ f.close()
 
 if method_cmdline:
     rmtree(args.method[1])
-
-
-
-
-
-

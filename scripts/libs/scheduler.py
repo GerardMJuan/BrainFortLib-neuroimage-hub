@@ -15,7 +15,7 @@ class Launcher(object):
 
         self.name = 'script.sh'
         self.folder = './'
-        self.queue = 'short'
+        self.queue = 'medium'
         self.cmd = cmd
         self.omp_num_threads = 0
         self.run_in_gpu = False
