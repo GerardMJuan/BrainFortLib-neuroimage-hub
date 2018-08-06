@@ -19,4 +19,4 @@ SCRIPTS_DIR="/homedtic/gmarti/CODE/upf-nii/scripts"	# dir containing the scripts
 N_THREADS="60"                                       # N of threads for parallel comp.
 TEMPLATE="/homedtic/gmarti/DATA/MNI152/icbm_avg_152_t1_tal_nlin_symmetric_VI.nii"
 
-python /homedtic/gmarti/CODE/upf-nii/scripts/compute_similarities_BIDS.py --in_dir /homedtic/gmarti/DATA/Data/ADNI_BIDS/derivatives/registered_baseline/ --img_suffix .nii.gz --method Correlation --out_file pair_sim.txt --number_jobs 30
+python /homedtic/gmarti/CODE/upf-nii/scripts/compute_similarities_BIDS.py --in_dir /homedtic/gmarti/DATA/Data/ADNI_BIDS/derivatives/space_aff/ --img_suffix .nii.gz --method Correlation --out_file /homedtic/gmarti/pair_sim_aff --number_jobs 50 --number_cpus 16

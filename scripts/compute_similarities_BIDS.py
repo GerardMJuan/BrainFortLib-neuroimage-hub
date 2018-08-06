@@ -19,7 +19,9 @@ import SimpleITK as sitk
 from scipy.spatial.distance import correlation, dice
 from pickle import dump
 import multiprocessing as mp
-from Queue import Empty
+from multiprocessing import Queue
+import time
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--in_dir", type=str, nargs=1, required=True)
@@ -102,17 +104,23 @@ def parallel_dist(img_path_1, img_path_2, dist):
 
     if not sz_out:
         img_in_mm_space1, sz_out, sp_out = resample_image(img1_sitk, resample_size)
-        img_in_mm_space2, sz_out, sp_out = resample_image(img2_sitk, resample_size)
     else:
         img_in_mm_space1, _, _ = resample_image(img1_sitk, resample_size, sz_out, sp_out)
+
+    if not sz_out:
+        img_in_mm_space2, sz_out, sp_out = resample_image(img2_sitk, resample_size)
+    else:
         img_in_mm_space2, _, _ = resample_image(img2_sitk, resample_size, sz_out, sp_out)
 
     img1 = sitk.GetArrayFromImage(img_in_mm_space1)
     img2 = sitk.GetArrayFromImage(img_in_mm_space2)
-    assert img2.shape == img1.shape, "Target2 and target2 should be of same shape"
+    try:
+        assert img2.shape == img1.shape, "Target2 and target2 should be of same shape"
+    except AssertionError:
+        return 0
 
-    a = img1[mask].ravel()
-    b = img2[mask].ravel()
+    a = img1.ravel()
+    b = img2.ravel()
 
     if dist[0] == 'Correlation':
         scores = 1. - correlation(a, b)
@@ -125,7 +133,7 @@ def parallel_dist(img_path_1, img_path_2, dist):
 
     return scores
 
-
+t0 = time.time()
 project_root = args.in_dir[0]
 print(project_root)
 layout = BIDSLayout(project_root)
@@ -139,7 +147,6 @@ files = layout.get(extensions='.nii.gz', modality='anat')
 method_cmdline = False
 if args.method[0] in ['NormalizedCorrelation']:
     method_cmdline = True
-
 
 # if command line method create temp dir and copy mask file
 if method_cmdline:
@@ -155,29 +162,29 @@ if method_cmdline:
 # Structure of results
 scores = np.zeros((len(files), len(files)), dtype=np.float32)
 
-# Itertools starmap to iterate each element of matrix
-def starmap(function, iterable):
-    # starmap(pow, [(2,5), (3,2), (10,3)]) --> 32 9 1000
-    for row in iterable:
-        for elem in iterable:
-            yield parallel_dist(*elem)
-
-
 # Parallelize loop
+# l = len(files)
+l = 10
 if not method_cmdline:
     # Set number of cpus
     ncpus = args.number_cpus[0]
     # Initialize queue
     pool = mp.Pool(processes=ncpus)
-    args_list = [[[None, None, None] for x in range(len(files))] for y in range(len(files))]
-    for i in range(len(files)):
+    args_list = []
+    for i in range(l):
         img_path = files[i].filename
-        for j in range(i, len(files)):
+        for j in range(i, l):
             img_path_2 = files[j].filename
-            args_list[i, j] = [img_path, img_path_2, args.method]
+            args_list.append((img_path, img_path_2, args.method))
             # args_list[j, i] = [img_path, img_path_2, args.method[0], (i,j)]
 
-    scores = pool.map(starmap, args_list)
+    scores_aux = pool.starmap(parallel_dist, args_list)
+    k = 0
+    for i in range(l):
+        for j in range(i, l):
+            scores[i, j] = scores_aux[k]
+            k += 1
+
     scores = np.maximum(scores, scores.transpose())
     # Make the matrix symmetric
 
@@ -187,16 +194,9 @@ i = 0
 if method_cmdline:
     tmp_dir = args.method[1]
     list_of_jobs = []
-    
+
     if is_hpc:
         wait_jobs = [os.path.join(os.environ['ANTSSCRIPTS'], "waitForSGEQJobs.pl"), '0', '10']
-
-    if args.mask_file is not None:
-        mask_sitk = sitk.ReadImage(args.mask_file[0])
-        mask = sitk.GetArrayFromImage(mask_sitk)
-        assert img1.shape == mask.shape, "Target and mask images should be of same shape"
-    else:
-        mask = np.ones(img1.shape, dtype=np.bool)
 
     for img in files:
         img_path = img.filename
@@ -269,6 +269,10 @@ f = open(args.out_file[0], 'wb')
 file_list = [img.filename for img in files]
 dump((project_root, file_list, scores), f)
 f.close()
+
+t1 = time.time()
+print('Time to compute the script: ', t1 - t0)
+
 
 if method_cmdline:
     rmtree(args.method[1])

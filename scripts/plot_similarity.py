@@ -28,10 +28,13 @@ import matplotlib.pyplot as plt
 
 # # Decides images at each fold by maximizing the spread among the selected images in the manifold
 
+# command
+# python CODE/upf-nii/scripts/plot_similarity.py --scores_file /homedtic/gmarti/pair_sim_aff --num_atlas 20 --out_fig /homedtic/gmarti/test.png --out_val_xml /homedtic/gmarti/val.xml --out_test_xml /homedtic/gmarti/test.xml
+
+
 parser = argparse.ArgumentParser()
 parser.add_argument("--scores_file", type=str, nargs=1, required=True)
 parser.add_argument("--num_atlas", type=int, nargs=1, required=True)
-parser.add_argument("--metadata_file")
 parser.add_argument("--out_fig", type=str, nargs=1)
 parser.add_argument("--out_val_xml", type=str, nargs=1, help='out_file_xml')
 parser.add_argument("--out_tst_xml", type=str, nargs=1, help='out_file_xml')
@@ -41,13 +44,9 @@ args = parser.parse_args()
 
 f = open(args.scores_file[0], 'rb')
 #s = f.read()
-in_dir, in_files_list, in2_dir, in2_files_list, scores = load(f)
+in_dir, in_files_list, scores = load(f)
 print(in_dir)
-print(in2_dir)
-print(in_files_list)
 f.close()
-
-assert in_dir == in2_dir and in_files_list == in2_files_list, "Not same files"
 
 Natlas = args.num_atlas[0]
 
