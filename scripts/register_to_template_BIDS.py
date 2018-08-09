@@ -13,6 +13,7 @@ from sys import platform
 from subprocess import call
 import numpy as np
 import time
+import pandas as pd
 
 parser = argparse.ArgumentParser(description='Registers images to template. Can use initial transformation.')
 parser.add_argument("--in_dir", type=str, nargs=1, required=True, help='BIDS directory input images')
@@ -20,6 +21,7 @@ parser.add_argument("--in_name", type=str, nargs=1, required=True, help='derivat
 parser.add_argument("--img_suffix", type=str, nargs=1, required=True, help='suffix of input images')
 parser.add_argument("--template_file", type=str, nargs=1, required=True, help='template image')
 parser.add_argument("--out_name", type=str, nargs=1, required=True, help='Name of output image')
+parser.add_argument("--metadata_file", type=str, nargs=1, help="(optional) list of subjects of which to compute the similarity")
 parser.add_argument("--template_mask", type=str, nargs=1, help="(optional) to limit registration to a region (better start with good initialization)")
 parser.add_argument("--init_warp_dir_suffix", type=str, nargs='+', action="append", help="(optional) dir, suffix (and inverse flag for affine) of warps to be used as initialization (in order)")
 parser.add_argument("--transform", type=str, nargs=2, required=True, help="Rigid[*] | Affine[*] | Syn[*],BSplineSyN[*] 1<=resolution<=4 (with \'*\' do all lower resolutions too)")
@@ -30,7 +32,6 @@ parser.add_argument("--float", action="store_true", help='use single precision c
 parser.add_argument("--use_labels", type=str, nargs='+', help='use labels for registration: label_dir, label_suffix, template_labels, [weights_list_for_each_stage]')
 parser.add_argument("--baseline", action="store_true", help="apply only to baseline images")
 parser.add_argument("--number_jobs", type=int, nargs=1, required=True, help="Number of jobs for the cluster")
-
 
 # Here add more things to the json info maybe?
 # Output directory not needed, because it will be saved in the same input directory
@@ -63,6 +64,22 @@ if args.baseline:
     files = layout.get(extensions='.nii.gz', modality='anat', session='M00')
 else:
     files = layout.get(extensions='.nii.gz', modality='anat')
+
+if args.metadata_file:
+    new_files = []
+    # Remove from files all the scans that do not appear in our metadata_file
+    df_metadata = pd.read_csv(args.metadata_file[0])
+    for f in files:
+        s = f.subject
+        PTID = s[4:7] + '_S_'+ s[8:]
+        print(PTID)
+        if PTID in df_metadata.PTID.values:
+            new_files.append(f)
+    files = new_files
+    print("Number of scans")
+    print(len(files))
+
+
 
 # Checking template file
 assert os.path.exists(args.template_file[0]), "Template file not found"
@@ -105,6 +122,7 @@ for img in files:
     # ha de ser out_dir + /sub/anat/
     session = os.path.basename(os.path.dirname(os.path.dirname(img_path)))
     out_dir_img = out_dir + '/' + img.subject + '/' + img.session + '/' + img.modality + '/'
+    # out_dir_img = "/homedtic/gmarti/DATA/out_testing_spline2/"
     if not os.path.exists(out_dir_img):
         os.makedirs(out_dir_img)
 
@@ -117,10 +135,12 @@ for img in files:
         cmdline += ['--output', '[{}{},{}Warped.nii.gz]'.format(os.path.join(out_dir_img, img_name), args.out_warp_intfix[0], os.path.join(out_dir_img, img_file.split(os.extsep, 1)[0] + args.out_warp_intfix[0]))]
     else:
         cmdline += ['--output', '{}{}'.format(os.path.join(out_dir_img, img_name), args.out_warp_intfix[0])]
-    cmdline += ['--write-composite-transform', '0']
-    cmdline += ['--collapse-output-transforms', '1']
-    cmdline += ['--initialize-transforms-per-stage', '0']
-    cmdline += ['--interpolation', 'Linear']
+    # cmdline += ['--write-composite-transform', '0']
+    # cmdline += ['--collapse-output-transforms', '1']
+    # cmdline += ['--initialize-transforms-per-stage', '0']
+    # cmdline += ['--interpolation', 'Linear']
+    cmdline += ['--use-histogram-matching', '1']
+
     if args.float:
         cmdline += ['--float', '1']
 
@@ -146,7 +166,7 @@ for img in files:
         its_linear = ['0']*(resolution - 1) + [['1000', '500', '250', '100'][resolution - 1]] + ['0'] * (4 - resolution)
         its_syn = ['0']*(resolution - 1) + [['100', '100', '70', '20'][resolution - 1]] + ['0'] * (4 - resolution)
 
-    smooth_sig = '4x2x1x0'
+    smooth_sig = '3x2x1x0'
     shrink_fac = '8x4x2x1'
 
     if args.transform[0].rstrip('*') == 'Rigid' or not args.init_warp_dir_suffix:
@@ -168,7 +188,7 @@ for img in files:
         if w_lab > 0.0:
             cmdline += ['--metric', 'MeanSquares[{},{},{}]'.format(args.use_labels[2], lab_path, w_lab)]
 
-        cmdline += ['--convergence', '[{},1e-8,10]'.format('x'.join(its_linear))]
+        cmdline += ['--convergence', '[{}]'.format('x'.join(its_linear))]
         cmdline += ['--smoothing-sigmas', smooth_sig]
         cmdline += ['--shrink-factors', shrink_fac]
 
@@ -191,7 +211,7 @@ for img in files:
         if w_lab > 0.0:
             cmdline += ['--metric', 'MeanSquares[{},{},{}]'.format(args.use_labels[2], lab_path, w_lab)]
 
-        cmdline += ['--convergence', '[{},1e-8,10]'.format('x'.join(its_linear))]
+        cmdline += ['--convergence', '[{}]'.format('x'.join(its_linear))]
         cmdline += ['--smoothing-sigmas', smooth_sig]
         cmdline += ['--shrink-factors', shrink_fac]
 
@@ -231,11 +251,9 @@ for img in files:
             cmdline += ['--metric', 'MeanSquares[{},{},{}]'.format(args.use_labels[2], lab_path, w_lab)]
 
         cmdline += ['--convergence', '[{},1e-9,15]'.format('x'.join(its_syn))]
-        cmdline += ['--smoothing-sigmas', smooth_sig]
-        cmdline += ['--shrink-factors', shrink_fac]
+        cmdline += ['--smoothing-sigmas', '3x2x1x0']
+        cmdline += ['--shrink-factors', '6x4x2x1']
 
-
-    #
     # mask
 
     if args.template_mask is not None:
@@ -252,7 +270,7 @@ for img in files:
     qsub_launcher = Launcher(' '.join(cmdline))
     qsub_launcher.name = img_file.split(os.extsep, 1)[0]
     qsub_launcher.folder = out_dir_img
-    qsub_launcher.queue = 'medium'
+    qsub_launcher.queue = 'high'
     job_id = qsub_launcher.run()
 
     time.sleep(2)

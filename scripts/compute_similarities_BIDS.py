@@ -20,6 +20,7 @@ from scipy.spatial.distance import correlation, dice
 from pickle import dump
 import multiprocessing as mp
 from multiprocessing import Queue
+import pandas as pd
 import time
 
 
@@ -27,6 +28,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--in_dir", type=str, nargs=1, required=True)
 parser.add_argument("--img_suffix", type=str, nargs=1, required=True)
 parser.add_argument("--mask_file", type=str, nargs=1, help="(optional) mask of region to compare")
+parser.add_argument("--metadata_file", type=str, nargs=1, help="(optional) list of subjects of which to compute the similarity")
 parser.add_argument("--method", type=str, nargs='+', required=True, help='[Dice, [labels_list ...| nothing for all]] | Correlation | [NormalizedCorrelation, tmp_dir]')
 parser.add_argument("--out_file", type=str, nargs=1, required=True, help="output file with pairwise similarities")
 parser.add_argument("--number_jobs", type=int, nargs=1, required=True, help="Number of jobs for the cluster")
@@ -142,7 +144,19 @@ assert len(layout.get_subjects()) > 0, "No subjects in directory!"
 # Create img list
 # Create subject list
 files = layout.get(extensions='.nii.gz', modality='anat')
-
+if args.metadata_file:
+    new_files = []
+    # Remove from files all the scans that do not appear in our metadata_file
+    df_metadata = pd.read_csv(args.metadata_file[0])
+    for f in files:
+        s = f.subject
+        PTID = s[4:7] + '_S_'+ s[8:]
+        print(PTID)
+        if PTID in df_metadata.PTID.values and f.session == 'M00':
+            new_files.append(f)
+    files = new_files
+    print("Number of baselines")
+    print(len(files))
 # is command line method ?
 method_cmdline = False
 if args.method[0] in ['NormalizedCorrelation']:
@@ -163,8 +177,7 @@ if method_cmdline:
 scores = np.zeros((len(files), len(files)), dtype=np.float32)
 
 # Parallelize loop
-# l = len(files)
-l = 10
+l = len(files)
 if not method_cmdline:
     # Set number of cpus
     ncpus = args.number_cpus[0]

@@ -29,7 +29,7 @@ import matplotlib.pyplot as plt
 # # Decides images at each fold by maximizing the spread among the selected images in the manifold
 
 # command
-# python CODE/upf-nii/scripts/plot_similarity.py --scores_file /homedtic/gmarti/pair_sim_aff --num_atlas 20 --out_fig /homedtic/gmarti/test.png --out_val_xml /homedtic/gmarti/val.xml --out_test_xml /homedtic/gmarti/test.xml
+# python CODE/upf-nii/scripts/plot_similarity.py --scores_file /homedtic/gmarti/similarity_affine_longAD --num_atlas 20 --out_fig /homedtic/gmarti/test.png --out_val_xml /homedtic/gmarti/val.xml --out_tst_xml /homedtic/gmarti/test.xml
 
 
 parser = argparse.ArgumentParser()
