@@ -7,7 +7,8 @@ separately and saves the image in the same directory, with an added prefix.
 In the preprocessing pipeline, this is always the first step.
 """
 
-from bids.grabbids import BIDSLayout
+import bids.layout
+import bids.tests
 import argparse
 from fnmatch import fnmatch
 from libs.scheduler import Launcher
@@ -51,7 +52,7 @@ else:
 # Check that bids directory is not empty(TODO)
 project_root = args.in_dir[0]
 print(project_root)
-layout = BIDSLayout(project_root)
+layout = bids.layout.BIDSLayout([(project_root, 'bids')], exclude='derivatives/')
 assert len(layout.get_subjects()) > 0, "No subjects in directory!"
 
 # Create img list
@@ -154,7 +155,7 @@ if args.n4:
     # Repopulate the population with new images
     project_root = in_dir
     print(project_root)
-    layout = BIDSLayout(project_root)
+    layout = bids.layout.BIDSLayout(project_root)
     assert len(layout.get_subjects()) > 0, "No subjects in directory!"
 
     # Create img list
@@ -173,6 +174,11 @@ if args.denoising:
 
         session = os.path.basename(os.path.dirname(os.path.dirname(img_path)))
         out_dir_img = out_dir + img.subject + '/' + img.session + '/' + img.modality + '/'
+
+        # If the file exists at the output path, it already has been done
+        if os.path.isfile(os.path.join(out_dir_img, img_file)):
+            continue
+
         if not os.path.exists(out_dir_img):
             os.makedirs(out_dir_img)
 
@@ -182,7 +188,6 @@ if args.denoising:
         cmdline += ['--output', os.path.join(out_dir_img, img_file)]
 
         print("Launching Denoising for {}".format(img_file))
-
         qsub_launcher = Launcher(' '.join(cmdline))
         qsub_launcher.name = img_file.split(os.extsep, 1)[0]
         qsub_launcher.folder = out_dir_img
@@ -221,7 +226,7 @@ if args.denoising:
 
     # Repopulate the population with new images
     project_root = in_dir
-    layout = BIDSLayout(project_root)
+    layout = bids.layout.BIDSLayout(project_root)
     assert len(layout.get_subjects()) > 0, "No subjects in directory!"
 
     # Create img list

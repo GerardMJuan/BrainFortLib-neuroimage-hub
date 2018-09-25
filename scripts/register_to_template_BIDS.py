@@ -4,7 +4,8 @@ Script to register all images to a given template.abs
 This scripts uses the BIDS and CAPS neuroimaging folder structure.
 """
 
-from bids.grabbids import BIDSLayout
+import bids.layout
+import bids.tests
 import argparse
 import os
 from fnmatch import fnmatch
@@ -56,7 +57,7 @@ else:
 # Check that bids directory is not empty
 project_root = args.in_dir[0] + 'derivatives/' + args.in_name[0]
 print(project_root)
-layout = BIDSLayout(project_root)
+layout = bids.layout.BIDSLayout(project_root)
 assert len(layout.get_subjects()) > 0, "No subjects in directory!"
 
 # Create img list
@@ -72,7 +73,6 @@ if args.metadata_file:
     for f in files:
         s = f.subject
         PTID = s[4:7] + '_S_'+ s[8:]
-        print(PTID)
         if PTID in df_metadata.PTID.values:
             new_files.append(f)
     files = new_files
@@ -266,7 +266,6 @@ for img in files:
     print("Launching registration of file {}".format(img_file))
 
 	#os.system(' '.join(cmdline))
-
     qsub_launcher = Launcher(' '.join(cmdline))
     qsub_launcher.name = img_file.split(os.extsep, 1)[0]
     qsub_launcher.folder = out_dir_img

@@ -4,7 +4,8 @@ run ROBEX on a BIDS dataset.
 ROBEX is a progrem that performs brain extraction on sMRI images.
 """
 
-from bids.grabbids import BIDSLayout
+import bids.layout
+import bids.tests
 import os
 from libs.scheduler import Launcher
 import argparse
@@ -36,7 +37,7 @@ else:
 # Check that bids directory is not empty(TODO)
 project_root = args.input_dir[0]
 print(project_root)
-layout = BIDSLayout(project_root)
+layout = bids.layout.BIDSLayout([(project_root, 'bids')])
 assert len(layout.get_subjects()) > 0, "No subjects in directory!"
 
 # Create img list
@@ -62,6 +63,10 @@ for img in files:
 
     strip_path = os.path.join(out_dir_img + img_file)
 
+    # If the file exists at the output path, it already has been done
+    if os.path.isfile(strip_path):
+        continue
+
     # This needs to be changed
     if args.mask_suffix:
         mask_path = os.path.join(args.input_dir,img_names[i] + args.mask_suffix)
@@ -69,7 +74,7 @@ for img in files:
         mask_path = ''
 
     robex_path = os.path.join(os.environ['HOME'],'LIB','ROBEX')
-
+    print("{}/runROBEX.sh {} {} {}".format(robex_path,img_path,strip_path,mask_path))
     qsub_launcher = Launcher("{}/runROBEX.sh {} {} {}".format(robex_path,img_path,strip_path,mask_path))
     qsub_launcher.name = img_name
     qsub_launcher.folder = out_dir_img

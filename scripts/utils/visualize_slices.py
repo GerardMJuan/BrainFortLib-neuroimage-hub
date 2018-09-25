@@ -6,7 +6,8 @@ of determined slices of the image. Position of slices can be determined. Input d
 directory.
 """
 
-from bids.grabbids import BIDSLayout
+import bids.layout
+import bids.tests
 import os
 import argparse
 from fnmatch import fnmatch
@@ -33,7 +34,7 @@ args = parser.parse_args()
 # Check that bids directory is not empty(TODO)
 project_root = args.input_dir[0]
 print(project_root)
-layout = BIDSLayout(project_root)
+layout = bids.layout.BIDSLayout(project_root)
 assert len(layout.get_subjects()) > 0, "No subjects in directory!"
 
 # Create img list
@@ -84,3 +85,7 @@ for img in files:
         img_final = np.squeeze(t1[:, :, sl])
         name_img = img.subject + '_' + img.session + '_' + str(sl) + '3_nosk.png'
         plt.imsave(out_dir + name_img, img_final, cmap='gray')
+
+
+
+# List of subjects that are bad
