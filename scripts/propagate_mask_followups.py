@@ -4,7 +4,8 @@ This script registers a set of tepmlate masks to their followups.
 Scripts builds from propagate_mask_template.py
 """
 
-from bids.grabbids import BIDSLayout
+import bids.layout
+import bids.tests
 import argparse
 import os
 from fnmatch import fnmatch

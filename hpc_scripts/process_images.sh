@@ -1,4 +1,5 @@
 #!/bin/bash
+# Script to process images in a BIDS folder. Can do denoising, template norm, n4 and histogram match.
 #SBATCH -J process_img
 #SBATCH -p high
 #SBATCH --workdir=/homedtic/gmarti/LOGS

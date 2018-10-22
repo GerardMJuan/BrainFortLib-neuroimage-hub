@@ -1,4 +1,5 @@
 #!/bin/bash
+# Full script to remove skull DO NOT USE, NEEDS UPDATING.
 #SBATCH -J pipeline
 #SBATCH -p high
 #SBATCH --workdir=/homedtic/gmarti/DATA/Data

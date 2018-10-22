@@ -4,7 +4,8 @@ Script to register all images to a corresponding baseline.
 This scripts uses the BIDS and CAPS neuroimaging folder structure.
 """
 
-from bids.grabbids import BIDSLayout
+import bids.layout
+import bids.tests
 import argparse
 import os
 from fnmatch import fnmatch
@@ -49,7 +50,7 @@ else:
 # Check that bids directory is not empty(TODO)
 project_root = args.in_dir[0] + 'derivatives/' + args.in_name[0]
 print(project_root)
-layout = BIDSLayout(project_root)
+layout = bids.layout.BIDSLayout(project_root)
 assert len(layout.get_subjects()) > 0, "No subjects in directory!"
 
 # Create img list
@@ -253,11 +254,3 @@ if is_hpc:
     n_jobs = 0
 
 print("Registration finished.")
-
-
-Things without baseline, why
-# ADNI006S0681
-# ADNI010S0422
-# ADNI018S0055
-# ADNI141S0915
-# ADNI141S0726

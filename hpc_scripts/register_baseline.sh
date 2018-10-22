@@ -1,4 +1,6 @@
 #!/bin/bash
+# Register to baseline, BUT NEED TO UPDATE IT TO register_to_baseline_BIDS
+# DO NOT USE IT AS IT IS
 #SBATCH -J register_baseline
 #SBATCH -p high
 #SBATCH --workdir=/homedtic/gmarti/LOGS

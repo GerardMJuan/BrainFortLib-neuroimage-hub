@@ -1,4 +1,6 @@
 #!/bin/bash
+# Execute the compute_similarities_BIDS script, which calculates similarity between aubjects of a cohort in order
+# to detect possible registration errors. 
 #SBATCH -J sim
 #SBATCH -p high
 #SBATCH -N 4

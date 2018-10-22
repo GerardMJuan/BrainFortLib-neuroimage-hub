@@ -1,14 +1,12 @@
-"""
-Plot the simliarities of a dataset.
-
-Given a file with the similarities of a dataset, plot it
-in a two-dimensional embedding.
-"""
-
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 __author__ = 'gsanroma'
+"""
+Plot the simliarities of a dataset.
 
+Given a file with the similarities of a dataset, obtained with the script
+compute_similarities_BIDS.py plot it in a two-dimensional embedding.
+"""
 import argparse
 import numpy as np
 import os

@@ -3,7 +3,8 @@ This script registers a template mask to a given set of MRI images
 using a previously computed registration.
 """
 
-from bids.grabbids import BIDSLayout
+import bids.layout
+import bids.tests
 import argparse
 import os
 from fnmatch import fnmatch
@@ -43,12 +44,12 @@ else:
 # Check that bids directory is not empty
 project_root = args.in_dir[0] + 'derivatives/' + args.in_name[0]
 print(project_root)
-layout_img = BIDSLayout(project_root)
+layout_img = bids.layout.BIDSLayout(project_root)
 assert len(layout_img.get_subjects()) > 0, "No subjects in directory!"
 
 # Create layout of the reference images
 reference_root = args.in_dir[0] + 'derivatives/' + args.ref_name[0]
-layout_ref = BIDSLayout(reference_root)
+layout_ref = bids.layout.BIDSLayout(reference_root)
 assert len(layout_ref.get_subjects()) > 0, "No subjects found in reference directory!"
 
 # Checking template file

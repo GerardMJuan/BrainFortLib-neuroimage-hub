@@ -7,6 +7,7 @@ clarity. For more information, visit: http://bids.neuroimaging.io/
 
 Code by: Gerard Martí Juan (gerard.marti@upf.edu)
 Some of the code and ideas is taken from the Clinica software (clinica.run)
+HEAVY WORK IN PROGRESS
 """
 
 import argparse
