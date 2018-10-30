@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH -J free
 #SBATCH -p high
-#SBATCH -N 1
+#SBATCH -N 14
 #SBATCH -n 1
 #SBATCH --workdir=/homedtic/gmarti
 #SBATCH -o LOGS/free_%J.out # STDOUT
@@ -22,7 +22,7 @@ export FREESURFER_HOME=/homedtic/gmarti/LIB/freesurfer
 . $FREESURFER_HOME/SetUpFreeSurfer.sh
 SECONDS=0
 
-python /homedtic/gmarti/CODE/upf-nii/scripts/recon_all_BIDS.py --in_dir /homedtic/gmarti/DATA/Data/ADNI_BIDS --img_suffix .nii.gz --output_path /homedtic/gmarti/DATA/Data/SIMLR-AD-FS_Full/ --subject_file /homedtic/gmarti/DATA/ADNImetadata/simlrad-paper/freesurfer_information_v2.csv --number_jobs 40
+python /homedtic/gmarti/CODE/upf-nii/scripts/recon_all_BIDS_long.py --in_dir /homedtic/gmarti/DATA/Data/ADNI_BIDS --img_suffix .nii.gz --output_path /homedtic/gmarti/DATA/Data/CIMLR-long --subject_file /homedtic/gmarti/DATA/ADNImetadata/simlrad-paper/freesurfer_information_long.csv --number_jobs 30
 
 duration=$SECONDS
 echo "$(($duration / 60)) minutes and $(($duration % 60)) seconds elapsed."

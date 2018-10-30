@@ -80,13 +80,13 @@ for subject in df_subjects.itertuples():
 
     # Depending on fs_status column, do one thing or another
     if subject.fs_status == 'Done':
-        cmdline = ['recon-all', '-subjid', img.subject, '-sd', out_dir, '-qcache', '-no-isrunning']
+        continue
+        # cmdline = ['recon-all', '-subjid', img.subject, '-sd', out_dir, '-qcache', '-no-isrunning']
     # elif subject.fs_status == 3:
     #    # Do recon all 3
     #    cmdline = ['recon-all', '-subjid', img.subject, '-sd', out_dir, '-autorecon3', '-no-isrunning']
     else:
-        continue
-    #     cmdline = ['recon-all', '-i', img_path, '-subjid', img.subject, '-sd', out_dir, '-all', '-cw256', '-no-isrunning']
+        cmdline = ['recon-all', '-all', '-s', img.subject, '-i', img_path, '-sd', out_dir, '-qcache', '-no-isrunning']
 
     print(' '.join(cmdline))
     print("Launching registration of file {}".format(img_file))

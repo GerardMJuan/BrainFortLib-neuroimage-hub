@@ -19,10 +19,10 @@ from dltk.io.augmentation import *
 from dltk.io.preprocessing import *
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--input_dir",type=str,nargs=1, required=True, help="dir of images (should be BIDS)")
-parser.add_argument("--in_suffix",type=str,nargs=1, required=True, help="valid suffix for brain images")
-parser.add_argument("--out_dir",type=str,nargs=1, required=True, help="output directory of images")
-parser.add_argument("--slices",type=str,nargs=1, required=False,  help="(optional) list of slices (separate by commas)")
+parser.add_argument("--input_dir", type=str, nargs=1, required=True, help="dir of images (should be BIDS)")
+parser.add_argument("--in_suffix", type=str, nargs=1, required=True, help="valid suffix for brain images")
+parser.add_argument("--out_dir", type=str, nargs=1, required=True, help="output directory of images")
+parser.add_argument("--slices", type=str, nargs=1, required=False,  help="(optional) list of slices (separate by commas)")
 
 # Test of execution
 # python /homedtic/gmarti/CODE/upf-nii/scripts/utils/visualize_slices.py --input_dir /homedtic/gmarti/DATA/Data/ADNI_BIDS/derivatives/noskull --in_suffix .nii.gz --out_dir  /homedtic/gmarti/DATA/Data/png_samples/
