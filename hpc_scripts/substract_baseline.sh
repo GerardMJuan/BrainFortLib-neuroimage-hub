@@ -1,4 +1,5 @@
 #!/bin/bash
+# old script to substract baseline (WIP)
 #SBATCH -J substract_baseline
 #SBATCH -p short
 #SBATCH --workdir=/homedtic/gmarti/LOGS

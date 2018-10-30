@@ -11,7 +11,8 @@ import pandas as pd
 import os
 import shutil
 import glob
-from bids.grabbids import BIDSLayout
+import bids.layout
+import bids.tests
 
 # Path to ADNIMERGE and directories
 ADNIMERGE_file = "/homedtic/gmarti/DATA/ADNIMRIStandard1.5/ADNIMERGE.csv"
@@ -25,7 +26,7 @@ df_adnimerge = pd.read_csv(ADNIMERGE_file)
 df_metadata = df_adnimerge[["PTID", "VISCODE", "COLPROT", "IMAGEUID"]].copy()
 
 # Get BIDS directory info with layouts
-layout = BIDSLayout(BIDS_DIR)
+layout = bids.layout.BIDSLayout(BIDS_DIR)
 assert len(layout.get_subjects()) > 0, "No subjects in directory!"
 
 # Create empty lists with the availability

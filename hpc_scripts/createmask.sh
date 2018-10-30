@@ -1,4 +1,6 @@
 #!/bin/bash
+#Script to run createmask.py
+
 #SBATCH -J masking
 #SBATCH -p short
 #SBATCH --workdir=/homedtic/gmarti/LOGS

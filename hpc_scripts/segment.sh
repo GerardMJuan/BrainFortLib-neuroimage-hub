@@ -1,4 +1,5 @@
 #!/bin/bash
+# Segment image
 #SBATCH -J segment
 #SBATCH -p short
 #SBATCH --workdir=/homedtic/gmarti/LOGS

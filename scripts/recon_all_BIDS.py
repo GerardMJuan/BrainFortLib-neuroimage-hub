@@ -5,7 +5,8 @@ Script to register all images to a given template.abs
 This scripts uses the BIDS and CAPS neuroimaging folder structure.
 """
 
-from bids.grabbids import BIDSLayout
+import bids.layout
+import bids.tests
 import argparse
 import os
 from fnmatch import fnmatch
@@ -42,7 +43,7 @@ os.environ["ANTSSCRIPTS"] = "/homedtic/gmarti/LIB/ANTs/Scripts"
 
 # Check that bids directory is not empty(TODO)
 project_root = args.in_dir[0]
-layout = BIDSLayout(project_root)
+layout = bids.layout.BIDSLayout(project_root)
 assert len(layout.get_subjects()) > 0, "No subjects in directory!"
 
 # Create img list

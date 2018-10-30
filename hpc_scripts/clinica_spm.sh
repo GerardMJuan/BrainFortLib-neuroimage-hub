@@ -1,4 +1,5 @@
 #!/bin/bash
+# Script to run t1-spm-full-prep thrrought the clinica platform. (WIP)
 #SBATCH -J spm12
 #SBATCH -p high
 #SBATCH -N 4

@@ -7,7 +7,8 @@ Given a dataset of .nii.gz images, compute pairs of similarities between them, w
 different metrics.
 """
 
-from bids.grabbids import BIDSLayout
+import bids.layout
+import bids.tests
 import argparse
 import os
 from libs.scheduler import Launcher, check_file_repeat
@@ -138,7 +139,7 @@ def parallel_dist(img_path_1, img_path_2, dist):
 t0 = time.time()
 project_root = args.in_dir[0]
 print(project_root)
-layout = BIDSLayout(project_root)
+layout = bids.layout.BIDSLayout(project_root)
 assert len(layout.get_subjects()) > 0, "No subjects in directory!"
 
 # Create img list

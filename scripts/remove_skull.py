@@ -3,7 +3,8 @@ Removes skull from a set of images using a corresponding
 registered mask.
 """
 
-from bids.grabbids import BIDSLayout
+import bids.layout
+import bids.tests
 import argparse
 from fnmatch import fnmatch
 import os
@@ -29,10 +30,10 @@ else:
 
 # Check that bids directory is not empty
 project_root = args.base_dir[0] + 'derivatives/' + args.img_name[0]
-layout_mri = BIDSLayout(project_root)
+layout_mri = bids.layout.BIDSLayout(project_root)
 
 project_root = args.base_dir[0] + 'derivatives/'  + args.mask_name[0]
-layout_masks = BIDSLayout(project_root)
+layout_masks = bids.layout.BIDSLayout(project_root)
 
 # Create img list
 files = layout_mri.get(extensions='.nii.gz', modality='anat')
