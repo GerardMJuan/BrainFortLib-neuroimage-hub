@@ -43,11 +43,13 @@ os.environ["ANTSSCRIPTS"] = "/homedtic/gmarti/LIB/ANTs/Scripts"
 
 # Check that bids directory is not empty(TODO)
 project_root = args.in_dir[0]
-layout = bids.layout.BIDSLayout(project_root)
+layout = bids.layout.BIDSLayout([(project_root, 'bids')], exclude='derivatives/')
+
 assert len(layout.get_subjects()) > 0, "No subjects in directory!"
 
 # Create img list
 files = layout.get(extensions='.nii.gz', modality='anat', session='M00')
+
 # Keep only the baselines and the files from the subject_file
 df_subjects = pd.read_csv(args.subject_file[0])
 files_true = [x for x in layout.get_subjects() if str(x[4:7] + "_S_" + x[8:12]) in df_subjects.PTID.values]

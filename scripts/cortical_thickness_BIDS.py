@@ -1,6 +1,6 @@
 """
-Script to register all images to a given template.
-
+Script that apply the cortical thickness pipeline of ANTS  to a set of images in a BIDS directory
+and outputs and saves the results in the same folder.
 This scripts uses the BIDS and CAPS neuroimaging folder structure.
 """
 
