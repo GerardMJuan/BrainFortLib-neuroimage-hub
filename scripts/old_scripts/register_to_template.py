@@ -1,10 +1,14 @@
 import argparse
 import os
 from fnmatch import fnmatch
-from scheduler import Launcher
+import sys
 from sys import platform
 from subprocess import call
 import numpy as np
+
+# To import scheduler
+sys.path.append('/homedtic/gmarti/CODE/upf-nii/scripts/')
+from libs.scheduler import Launcher
 
 parser = argparse.ArgumentParser(description='Registers images to template. Can use initial transformation.')
 parser.add_argument("--in_dir", type=str, nargs=1, required=True, help='directory input images')
@@ -24,7 +28,7 @@ os.environ["ANTSPATH"] = "/homedtic/gmarti/LIB/ANTsbin/bin"
 os.environ["ANTSSCRIPTS"] = "/homedtic/gmarti/LIB/ANTs/Scripts"
 
 n_jobs = 0
-n_total_jobs = 10
+n_total_jobs = 30
 
 args = parser.parse_args()
 
@@ -46,7 +50,8 @@ if args.template_mask is not None:
 
 if args.use_labels is not None:
     lab_list = [f.split(args.img_suffix[0])[0] + args.use_labels[1] for f in img_list]
-    assert False not in [os.path.exists(os.path.join(args.use_labels[0], f)) for f in lab_list], "label files not found"
+    print(lab_list)
+    #assert False not in [os.path.exists(os.path.join(args.use_labels[0], f)) for f in lab_list], "label files not found"
     assert os.path.exists(args.use_labels[2]), "Template labels not found"
 
 resolution = int(args.transform[1])
@@ -67,19 +72,14 @@ for img_file in img_list:
 
     img_name = img_file.split(args.img_suffix[0])[0]
     img_path = os.path.join(args.in_dir[0], img_file)
-    '''
-    img_id = img_name[5:8]
-    print(img_id)
-    if int(img_id) < 22:
-    	continue
-	'''
-    #if os.path.isfile(os.path.join(args.out_dir[0], img_file.split(os.extsep, 1)[0] + args.out_warp_intfix[0] + 'Warped.nii.gz')):
-    #    print('File already exists.')
-    #    continue
-
 
     if args.use_labels is not None:
         lab_path = os.path.join(args.use_labels[0], img_name + args.use_labels[1])
+
+        # Check if labels exists, if not, continue
+        if not lab_path:
+            continue
+
     weight_idx = 3
 
     cmdline = [antsregistration_path, '--dimensionality', '3']
@@ -195,7 +195,7 @@ for img_file in img_list:
     cmdline += ['-v','1']
     print(' '.join(cmdline))
     print("Launching registration of file {}".format(img_file))
-    
+
 	#os.system(' '.join(cmdline))
 
     qsub_launcher = Launcher(' '.join(cmdline))
@@ -214,11 +214,6 @@ for img_file in img_list:
         print("Waiting for registration jobs to finish...")
         call(wait_jobs)
 
-        # Remove extra files from directory
-        filelist = [ f for f in os.listdir(args.out_dir[0]) if (not f.endswith("Warped.nii.gz") and not f.endswith(".mat")) ]
-        for f in filelist:
-            os.remove(os.path.join(args.out_dir[0], f))
-
         # Put njobs and waitjobs at 0 again
         n_jobs = 0
         wait_jobs = [os.path.join(os.environ['ANTSSCRIPTS'], "waitForSlurmJobs.pl"), '0', '10']
@@ -227,11 +222,6 @@ for img_file in img_list:
 if is_hpc:
     print("Waiting for registration jobs to finish...")
     call(wait_jobs)
-
-    ## Remove extra files from directory
-    filelist = [ f for f in os.listdir(args.out_dir[0]) if (not f.endswith("Warped.nii.gz") and not f.endswith(".mat")) ]
-    for f in filelist:
-      os.remove(os.path.join(args.out_dir[0], f))
 
     # Put njobs at 0 again
     n_jobs = 0

@@ -24,4 +24,10 @@ TEMPLATE="/homedtic/gmarti/DATA/MNI152/icbm_avg_152_t1_tal_nlin_symmetric_VI_bra
 
 # python $SCRIPTS_DIR/register_to_template_BIDS.py  --in_dir $BASE_DIR/ --in_name space_baseline/ --img_suffix .nii.gz --out_name space_ffd20 --transform BSplineSyN* 2 --c_point 20 --metadata_file /homedtic/gmarti/CODE/LongADBiomarker/tests/train_subset.csv --template_file $TEMPLATE --out_warp_intfix ffd20 --output_warped_image --number_jobs $N_THREADS
 
+# python $SCRIPTS_DIR/register_to_template_BIDS.py  --in_dir $BASE_DIR_STANDARD/ --img_suffix .nii.gz --out_name rigidMNI --transform Rigid* 2 --template_file $TEMPLATE --baseline --out_warp_intfix rgd --metadata_file /homedtic/gmarti/DATA/ADNImetadata/ADNI-standard/ADNI_SCREENING_SET.csv --output_warped_image --number_jobs $N_THREADS
+
 python $SCRIPTS_DIR/register_to_template_BIDS.py  --in_dir $BASE_DIR_STANDARD/ --img_suffix .nii.gz --out_name rigidMNI --transform Rigid* 2 --template_file $TEMPLATE --baseline --out_warp_intfix rgd --metadata_file /homedtic/gmarti/DATA/ADNImetadata/ADNI-standard/ADNI_SCREENING_SET.csv --output_warped_image --number_jobs $N_THREADS
+
+
+
+## Register to template using labels and using

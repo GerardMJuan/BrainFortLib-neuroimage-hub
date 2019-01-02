@@ -122,7 +122,8 @@ for img in files:
     # adapt out_dir to bids specification, copy part of the path of the input image
     # ha de ser out_dir + /sub/anat/
     session = os.path.basename(os.path.dirname(os.path.dirname(img_path)))
-    out_dir_img = out_dir + '/' + img.subject + '/' + img.session + '/' + img.modality + '/'
+    out_dir_img = out_dir
+    # out_dir_img = out_dir + '/' + img.subject + '/' + img.session + '/' + img.modality + '/'
     # out_dir_img = "/homedtic/gmarti/DATA/out_testing_spline2/"
     if not os.path.exists(out_dir_img):
         os.makedirs(out_dir_img)
